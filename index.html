@@ -6,10 +6,11 @@
   <title>PurpleYellow</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+  <!-- ✅ Firebase COMPAT SDKs for GitHub Pages -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
+  <!-- ✅ Your Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBs0wkup1ENI6yn2xra_bS155NQKXpKpM0",
@@ -17,8 +18,7 @@
       projectId: "purpleyellow-1cb31",
       storageBucket: "purpleyellow-1cb31.appspot.com",
       messagingSenderId: "880198996144",
-      appId: "1:880198996144:web:acb2753c88af916c222b75",
-      measurementId: "G-T0HQL6PFRD"
+      appId: "1:880198996144:web:acb2753c88af916c222b75"
     };
 
     const app = firebase.initializeApp(firebaseConfig);
@@ -63,7 +63,7 @@
       <!-- Profile -->
       <section id="section-profile" class="section">
         <div class="profile-card">
-          <img id="profilePic" class="profile-pic" src="default-pfp.jpg" />
+          <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/80" />
           <input type="file" id="newPfp" accept="image/*" />
           <input type="text" id="displayName" placeholder="Display Name" />
           <input type="text" id="username" placeholder="@username" />
@@ -78,6 +78,7 @@
     </main>
   </div>
 
+  <!-- ✅ Your App Logic -->
   <script src="script.js"></script>
 </body>
 </html>
