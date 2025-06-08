@@ -5,8 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PurpleYellow</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBs0wkup1ENI6yn2xra_bS155NQKXpKpM0",
@@ -19,7 +23,9 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
   </script>
-  <script src="script.js"></script>
+
+  <!-- ✅ Defer script to wait for DOM -->
+  <script src="script.js" defer></script>
 </head>
 <body>
   <div class="layout">
@@ -36,6 +42,7 @@
         <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
     </aside>
+
     <main class="main-feed">
       <section id="section-home" class="section active">
         <div class="post-input">
@@ -44,14 +51,17 @@
         </div>
         <div id="feed" class="feed"></div>
       </section>
+
       <section id="section-explore" class="section"></section>
       <section id="section-notifications" class="section"></section>
       <section id="section-messages" class="section"><div class="empty">No messages yet.</div></section>
       <section id="section-bookmarks" class="section"></section>
       <section id="section-lists" class="section"><div class="empty">No lists yet.</div></section>
+
       <section id="section-profile" class="section">
         <div class="profile-card">
-          <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/80" />
+          <!-- ✅ Working placeholder image -->
+          <img id="profilePic" class="profile-pic" src="https://placehold.co/80x80" />
           <input type="file" id="newPfp" accept="image/*" />
           <input type="text" id="displayName" placeholder="Display Name" />
           <input type="text" id="username" placeholder="@username" />
@@ -61,6 +71,7 @@
         <h3>Your Posts</h3>
         <div id="profilePosts" class="feed"></div>
       </section>
+
       <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
     </main>
   </div>
