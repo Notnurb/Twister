@@ -6,11 +6,11 @@
   <title>PurpleYellow</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- ✅ Firebase COMPAT SDKs for GitHub Pages -->
+  <!-- ✅ Firebase COMPAT SDKs for plain HTML -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- ✅ Your Firebase Config -->
+  <!-- ✅ Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBs0wkup1ENI6yn2xra_bS155NQKXpKpM0",
@@ -42,7 +42,7 @@
       </nav>
     </aside>
 
-    <!-- Main -->
+    <!-- Main Feed -->
     <main class="main-feed">
       <!-- HOME -->
       <section id="section-home" class="section active">
@@ -63,6 +63,7 @@
       <!-- Profile -->
       <section id="section-profile" class="section">
         <div class="profile-card">
+          <!-- ✅ Placeholder pic avoids 404 -->
           <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/80" />
           <input type="file" id="newPfp" accept="image/*" />
           <input type="text" id="displayName" placeholder="Display Name" />
@@ -74,11 +75,12 @@
         <div id="profilePosts" class="feed"></div>
       </section>
 
+      <!-- More -->
       <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
     </main>
   </div>
 
-  <!-- ✅ Your App Logic -->
+  <!-- ✅ Your working script -->
   <script src="script.js"></script>
 </body>
 </html>
