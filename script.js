@@ -21,7 +21,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 
-// Setup Firebase instances
 const app = getApp();
 const db = getFirestore(app);
 const storage = getStorage(app);
