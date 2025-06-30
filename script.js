@@ -1,3 +1,31 @@
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  updateDoc,
+  doc,
+  arrayUnion,
+  increment,
+  where,
+  getDocs,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+
+// Setup Firebase instances
+const app = getApp();
+const db = getFirestore(app);
+const storage = getStorage(app);
+
 const feed = document.getElementById("feed");
 let localUser = {
   username: localStorage.getItem("username") || "@anon",
@@ -7,7 +35,6 @@ let localUser = {
 };
 let bookmarkedIDs = JSON.parse(localStorage.getItem("bookmarkedIDs") || "[]");
 
-// ----------- New: Media preview logic -----------
 const mediaInput = document.getElementById("mediaInput");
 const mediaPreview = document.getElementById("mediaPreview");
 let selectedMediaFile = null;
@@ -27,7 +54,6 @@ mediaInput.addEventListener("change", () => {
   }
 });
 
-// ----------- Navigation and profile -----------
 document.querySelectorAll(".nav-btn").forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
@@ -39,7 +65,6 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
   };
 });
 
-// ----------- NEW: Upload media & post -----------
 document.getElementById("tweetButton").onclick = async () => {
   const text = document.getElementById("tweetText").value.trim();
   if (!text && !selectedMediaFile) return;
@@ -48,18 +73,14 @@ document.getElementById("tweetButton").onclick = async () => {
 
   if (selectedMediaFile) {
     // Upload to Firebase Storage
-    const storage = firebase.storage();
-    const storageRef = storage.ref();
     const postId = "post_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
-    const fileRef = storageRef.child(`media/${postId}_${selectedMediaFile.name}`);
-
-    // Upload file
-    await fileRef.put(selectedMediaFile);
-    mediaURL = await fileRef.getDownloadURL();
+    const fileRef = ref(storage, `media/${postId}_${selectedMediaFile.name}`);
+    await uploadBytes(fileRef, selectedMediaFile);
+    mediaURL = await getDownloadURL(fileRef);
     mediaType = selectedMediaFile.type.startsWith("image/") ? "image" : "video";
   }
 
-  await db.collection("posts").add({
+  await addDoc(collection(db, "posts"), {
     text,
     likes: 0,
     dislikes: 0,
@@ -78,25 +99,24 @@ document.getElementById("tweetButton").onclick = async () => {
 };
 
 function renderFeed() {
-  db.collection("posts")
-    .orderBy("timestamp", "desc")
-    .onSnapshot(snapshot => {
-      feed.innerHTML = "";
-      if (snapshot.empty) {
-        feed.innerHTML = "<div class='empty'>No posts yet.</div>";
-        return;
-      }
-      snapshot.forEach(doc => {
-        const post = doc.data();
-        const id = doc.id;
-        feed.innerHTML += renderPostHTML(post, id);
-      });
+  const postsRef = collection(db, "posts");
+  const q = query(postsRef, orderBy("timestamp", "desc"));
+  onSnapshot(q, (snapshot) => {
+    feed.innerHTML = "";
+    if (snapshot.empty) {
+      feed.innerHTML = "<div class='empty'>No posts yet.</div>";
+      return;
+    }
+    snapshot.forEach(docSnap => {
+      const post = docSnap.data();
+      const id = docSnap.id;
+      feed.innerHTML += renderPostHTML(post, id);
     });
+  });
 }
 
 function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
-  // --- Render media if attached
   let mediaHTML = "";
   if (post.mediaURL && post.mediaType === "image") {
     mediaHTML = `<img src="${post.mediaURL}" alt="media" style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" />`;
@@ -111,8 +131,8 @@ function renderPostHTML(post, id) {
       <div class="tweet-footer">
         <button onclick="like('${id}')">❤️ ${post.likes}</button>
         <button onclick="dislike('${id}')">👎 ${post.dislikes}</button>
-        <button onclick="comment('${id}')">💬 ${post.comments.length}</button>
-        <button onclick="reply('${id}')">↩️ ${post.replies.length}</button>
+        <button onclick="commentPrompt('${id}')">💬 ${post.comments.length}</button>
+        <button onclick="replyPrompt('${id}')">↩️ ${post.replies.length}</button>
         <button onclick="toggleBookmark('${id}')">${isBookmarked ? '🔖 Bookmarked' : '🔖 Bookmark'}</button>
       </div>
       ${post.comments.map(c => `<div class="comment">💬 ${c}</div>`).join('')}
@@ -121,28 +141,29 @@ function renderPostHTML(post, id) {
   `;
 }
 
-async function like(id) {
-  const ref = db.collection("posts").doc(id);
-  await ref.update({ likes: firebase.firestore.FieldValue.increment(1) });
-}
-async function dislike(id) {
-  const ref = db.collection("posts").doc(id);
-  await ref.update({ dislikes: firebase.firestore.FieldValue.increment(1) });
-}
-async function comment(id) {
+// --- Modular like/dislike/comments ---
+window.like = async (id) => {
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, { likes: increment(1) });
+};
+window.dislike = async (id) => {
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, { dislikes: increment(1) });
+};
+window.commentPrompt = async (id) => {
   const text = prompt("Enter a comment:");
   if (!text) return;
-  const ref = db.collection("posts").doc(id);
-  await ref.update({ comments: firebase.firestore.FieldValue.arrayUnion(text) });
-}
-async function reply(id) {
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, { comments: arrayUnion(text) });
+};
+window.replyPrompt = async (id) => {
   const text = prompt("Enter a reply:");
   if (!text) return;
-  const ref = db.collection("posts").doc(id);
-  await ref.update({ replies: firebase.firestore.FieldValue.arrayUnion(text) });
-}
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, { replies: arrayUnion(text) });
+};
 
-function toggleBookmark(id) {
+window.toggleBookmark = (id) => {
   if (bookmarkedIDs.includes(id)) {
     bookmarkedIDs = bookmarkedIDs.filter(x => x !== id);
   } else {
@@ -150,7 +171,7 @@ function toggleBookmark(id) {
   }
   localStorage.setItem("bookmarkedIDs", JSON.stringify(bookmarkedIDs));
   renderFeed();
-}
+};
 
 function renderBookmarks() {
   const el = document.getElementById("section-bookmarks");
@@ -160,16 +181,17 @@ function renderBookmarks() {
     container.innerHTML = "<div class='empty'>No bookmarks saved.</div>";
     return;
   }
-  bookmarkedIDs.forEach(id => {
-    db.collection("posts").doc(id).get().then(doc => {
-      if (doc.exists) {
-        container.innerHTML += renderPostHTML(doc.data(), id);
-      }
-    });
+  bookmarkedIDs.forEach(async (id) => {
+    const postRef = doc(db, "posts", id);
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      container.innerHTML += renderPostHTML(postSnap.data(), id);
+    }
   });
 }
 
-function saveProfile() {
+// -------- Profile save/render --------
+window.saveProfile = function() {
   const username = document.getElementById("username").value || "@anon";
   const displayName = document.getElementById("displayName").value || "Anonymous";
   const bio = document.getElementById("bio").value;
@@ -194,7 +216,7 @@ function saveProfile() {
     bio,
     profilePic: localStorage.getItem("profilePic") || "https://via.placeholder.com/80"
   };
-}
+};
 
 function renderProfile() {
   document.getElementById("username").value = localUser.username;
@@ -205,19 +227,17 @@ function renderProfile() {
   const container = document.getElementById("profilePosts");
   container.innerHTML = "";
 
-  db.collection("posts")
-    .where("author.username", "==", localUser.username)
-    .orderBy("timestamp", "desc")
-    .get()
-    .then(snapshot => {
-      if (snapshot.empty) {
-        container.innerHTML = "<div class='empty'>You haven’t posted yet.</div>";
-        return;
-      }
-      snapshot.forEach(doc => {
-        container.innerHTML += renderPostHTML(doc.data(), doc.id);
-      });
+  const postsRef = collection(db, "posts");
+  const q = query(postsRef, where("author.username", "==", localUser.username), orderBy("timestamp", "desc"));
+  getDocs(q).then(snapshot => {
+    if (snapshot.empty) {
+      container.innerHTML = "<div class='empty'>You haven’t posted yet.</div>";
+      return;
+    }
+    snapshot.forEach(docSnap => {
+      container.innerHTML += renderPostHTML(docSnap.data(), docSnap.id);
     });
+  });
 }
 
 renderFeed();
