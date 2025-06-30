@@ -13,17 +13,16 @@ import {
   getDocs,
   getDoc
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 
+// ----- SUPABASE CONFIG -----
+const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhanp0YnZveXVnYmJjcm91cHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTA4NjIsImV4cCI6MjA2Njg2Njg2Mn0.0DdBIpNFIUsAH1-M9NcfmKHnwv2XOc0TEk0flrq7H0I";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ----- FIRESTORE CONFIG -----
 const app = getApp();
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 const feed = document.getElementById("feed");
 let localUser = {
@@ -71,11 +70,19 @@ document.getElementById("tweetButton").onclick = async () => {
   let mediaType = null;
 
   if (selectedMediaFile) {
-    // Upload to Firebase Storage
     const postId = "post_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
-    const fileRef = ref(storage, `media/${postId}_${selectedMediaFile.name}`);
-    await uploadBytes(fileRef, selectedMediaFile);
-    mediaURL = await getDownloadURL(fileRef);
+    const ext = selectedMediaFile.name.split('.').pop();
+    const filePath = `media/${postId}.${ext}`;
+
+    const { data, error } = await supabase.storage.from('media').upload(filePath, selectedMediaFile, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    if (error) {
+      alert("Upload failed: " + error.message);
+      return;
+    }
+    mediaURL = `${SUPABASE_URL}/storage/v1/object/public/${filePath}`;
     mediaType = selectedMediaFile.type.startsWith("image/") ? "image" : "video";
   }
 
