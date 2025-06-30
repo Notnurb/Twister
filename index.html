@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Firebase Modular SDKs -->
+  <!-- Supabase JS (for media uploads) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Firebase Modular SDKs (for posts) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-    import { getStorage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD7f60EMEI-lv4H8kCxjgC7SNMSYHAB0Qc",
@@ -23,11 +23,9 @@
       measurementId: "G-YRXD8FE8WM"
     };
 
-    // Global init for use in script.js
     window.firebaseApp = initializeApp(firebaseConfig);
     window.db = getFirestore(window.firebaseApp);
     window.analytics = getAnalytics(window.firebaseApp);
-    window.storage = getStorage(window.firebaseApp);
   </script>
   <script type="module" src="script.js"></script>
 </head>
