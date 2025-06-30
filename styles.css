@@ -137,3 +137,25 @@ textarea {
   color: #777;
   padding: 20px;
 }
+
+/* ---- Media upload & preview styles ---- */
+.media-upload {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+#mediaInput {
+  color: #fff;
+  background: none;
+}
+
+#mediaPreview img, #mediaPreview video {
+  max-width: 120px;
+  max-height: 90px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #222;
+  display: block;
+}
