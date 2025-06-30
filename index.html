@@ -6,11 +6,12 @@
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Modern Firebase SDK with type="module" -->
+  <!-- Firebase Modular SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD7f60EMEI-lv4H8kCxjgC7SNMSYHAB0Qc",
@@ -22,17 +23,13 @@
       measurementId: "G-YRXD8FE8WM"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-
-    window.firebaseApp = app;
-    window.db = db;
+    // Global init for use in script.js
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = getFirestore(window.firebaseApp);
+    window.analytics = getAnalytics(window.firebaseApp);
+    window.storage = getStorage(window.firebaseApp);
   </script>
-
-  <!-- Add Firebase Storage (required for media uploads) -->
-  <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js"></script>
-  <script src="script.js" defer></script>
+  <script type="module" src="script.js"></script>
 </head>
 <body>
   <div class="layout">
