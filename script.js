@@ -7,6 +7,27 @@ let localUser = {
 };
 let bookmarkedIDs = JSON.parse(localStorage.getItem("bookmarkedIDs") || "[]");
 
+// ----------- New: Media preview logic -----------
+const mediaInput = document.getElementById("mediaInput");
+const mediaPreview = document.getElementById("mediaPreview");
+let selectedMediaFile = null;
+
+mediaInput.addEventListener("change", () => {
+  mediaPreview.innerHTML = "";
+  selectedMediaFile = null;
+  if (mediaInput.files && mediaInput.files[0]) {
+    selectedMediaFile = mediaInput.files[0];
+    const file = selectedMediaFile;
+    const url = URL.createObjectURL(file);
+    if (file.type.startsWith("image/")) {
+      mediaPreview.innerHTML = `<img src="${url}" alt="preview" />`;
+    } else if (file.type.startsWith("video/")) {
+      mediaPreview.innerHTML = `<video src="${url}" controls />`;
+    }
+  }
+});
+
+// ----------- Navigation and profile -----------
 document.querySelectorAll(".nav-btn").forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
@@ -18,9 +39,26 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
   };
 });
 
+// ----------- NEW: Upload media & post -----------
 document.getElementById("tweetButton").onclick = async () => {
   const text = document.getElementById("tweetText").value.trim();
-  if (!text) return;
+  if (!text && !selectedMediaFile) return;
+  let mediaURL = null;
+  let mediaType = null;
+
+  if (selectedMediaFile) {
+    // Upload to Firebase Storage
+    const storage = firebase.storage();
+    const storageRef = storage.ref();
+    const postId = "post_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
+    const fileRef = storageRef.child(`media/${postId}_${selectedMediaFile.name}`);
+
+    // Upload file
+    await fileRef.put(selectedMediaFile);
+    mediaURL = await fileRef.getDownloadURL();
+    mediaType = selectedMediaFile.type.startsWith("image/") ? "image" : "video";
+  }
+
   await db.collection("posts").add({
     text,
     likes: 0,
@@ -28,9 +66,15 @@ document.getElementById("tweetButton").onclick = async () => {
     comments: [],
     replies: [],
     timestamp: Date.now(),
-    author: localUser
+    author: localUser,
+    mediaURL,
+    mediaType
   });
+
   document.getElementById("tweetText").value = "";
+  mediaPreview.innerHTML = "";
+  mediaInput.value = "";
+  selectedMediaFile = null;
 };
 
 function renderFeed() {
@@ -52,10 +96,18 @@ function renderFeed() {
 
 function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
+  // --- Render media if attached
+  let mediaHTML = "";
+  if (post.mediaURL && post.mediaType === "image") {
+    mediaHTML = `<img src="${post.mediaURL}" alt="media" style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" />`;
+  } else if (post.mediaURL && post.mediaType === "video") {
+    mediaHTML = `<video src="${post.mediaURL}" controls style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" ></video>`;
+  }
   return `
     <div class="tweet">
       <strong>${post.author.displayName}</strong> <span style="color:#888;">${post.author.username}</span>
-      <p>${post.text}</p>
+      <p>${post.text || ""}</p>
+      ${mediaHTML}
       <div class="tweet-footer">
         <button onclick="like('${id}')">❤️ ${post.likes}</button>
         <button onclick="dislike('${id}')">👎 ${post.dislikes}</button>
