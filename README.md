@@ -1,15 +1,103 @@
-Welcome To Twister, A simple messaging app to connect with people from all around the world!
+🌀 Welcome to Twister!
+Twister is a modern, simple, and fast social app. You can post Text messages; edit your profile; and chat with friends.
+ No accounts or signups are needed—just jump in and start sharing!
 
-If you are new to twister we reccomend you read the guide.
+🚦 How to Navigate Twister
+Sidebar (Left):
+ Use the buttons to switch between different parts of Twister:
 
-How to post.
 
-1. Open twister
-2. Click on the box in the explore/feed page
-3. Type what you would like to post inside it
-4. Then hit post
-5. Other people can now, Heart, Reply, Comment and bookmark your video
+🏠 Home: See everyone’s latest posts and add your own at the top.
 
-![Guide Video 1](https://github.com/user-attachments/assets/f80c8c70-32d0-4989-bfde-ac7fc4f77e75)
 
+🔍 Explore: See trending posts and new content (feature coming soon!).
+
+
+🔔 Notifications: (Coming soon!)
+
+
+✉️ Messages: View and send private messages (coming soon).
+
+
+🔖 Bookmarks: See posts you’ve bookmarked for later (coming soon).
+
+
+📃 Lists: Organize your favorite users or posts (coming soon).
+
+
+👤 Profile: View and edit your own posts, profile picture, bio, and username.
+
+
+⚙️ More: Find info, help, and settings.
+
+
+
+📝 How to Post
+Go to the Home page (🏠).
+
+
+Type your message in the big box at the top (“What’s happening?”).
+
+
+
+Click “Post” to share with everyone!
+ Your new post will appear instantly in the feed.
+
+
+
+👤 How to Edit Your Profile
+Click the 👤 Profile button in the sidebar.
+
+
+Update your display name, username, bio, or profile picture.
+
+
+Click Save Profile to save your changes.
+
+
+Your posts and profile info will update right away.
+
+
+
+📄 Website Rules & Guidelines
+Twister is a safe, positive space for everyone! Please follow these rules:
+Be kind and respectful to all users.
+
+
+No hate speech, bullying, or harassment of any kind.
+
+
+No spam, advertising, or scams.
+
+
+No explicit, adult, or violent content.
+
+
+Only post images and videos you have the right to share.
+
+
+Don’t impersonate others.
+
+
+Respect privacy: Don’t share private info about yourself or others.
+
+
+Follow the law: No illegal content or activity allowed.
+
+
+Breaking these rules may result in your posts being removed or your access being blocked.
+
+💡 Tips
+You don’t need to sign up or log in. Everything is saved on your device!
+
+
+Your profile and posts are private to your browser/device.
+ (If you clear your browser data, they’ll be gone!)
+
+
+Have fun and share positive content!
+
+
+
+Enjoy Twister, and help keep our community awesome!
 
