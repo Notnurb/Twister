@@ -17,7 +17,7 @@ import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.j
 
 // ----- SUPABASE CONFIG -----
 const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhanp0YnZveXVnYmJjcm91cHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTA4NjIsImV4cCI6MjA2Njg2Njg2Mn0.0DdBIpNFIUsAH1-M9NcfmKHnwv2XOc0TEk0flrq7H0I";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ----- FIRESTORE CONFIG -----
@@ -121,6 +121,7 @@ function renderFeed() {
   });
 }
 
+// 🆕 Profile Picture Support
 function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
   let mediaHTML = "";
@@ -129,9 +130,18 @@ function renderPostHTML(post, id) {
   } else if (post.mediaURL && post.mediaType === "video") {
     mediaHTML = `<video src="${post.mediaURL}" controls style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" ></video>`;
   }
+
   return `
     <div class="tweet">
-      <strong>${post.author.displayName}</strong> <span style="color:#888;">${post.author.username}</span>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <img src="${post.author.profilePic || 'https://via.placeholder.com/80'}"
+             class="profile-pic"
+             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong>${post.author.displayName}</strong><br />
+          <span style="color:#888;">${post.author.username}</span>
+        </div>
+      </div>
       <p>${post.text || ""}</p>
       ${mediaHTML}
       <div class="tweet-footer">
@@ -147,7 +157,7 @@ function renderPostHTML(post, id) {
   `;
 }
 
-// --- Modular like/dislike/comments ---
+// Like/Dislike/Comment/Reply
 window.like = async (id) => {
   const postRef = doc(db, "posts", id);
   await updateDoc(postRef, { likes: increment(1) });
@@ -168,7 +178,6 @@ window.replyPrompt = async (id) => {
   const postRef = doc(db, "posts", id);
   await updateDoc(postRef, { replies: arrayUnion(text) });
 };
-
 window.toggleBookmark = (id) => {
   if (bookmarkedIDs.includes(id)) {
     bookmarkedIDs = bookmarkedIDs.filter(x => x !== id);
@@ -196,8 +205,7 @@ function renderBookmarks() {
   });
 }
 
-// -------- Profile save/render --------
-window.saveProfile = function() {
+window.saveProfile = function () {
   const username = document.getElementById("username").value || "@anon";
   const displayName = document.getElementById("displayName").value || "Anonymous";
   const bio = document.getElementById("bio").value;
