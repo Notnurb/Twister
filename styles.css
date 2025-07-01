@@ -440,3 +440,51 @@ body {
     padding: 6px 1vw;
   }
 }
+
+/* Modal styles */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,18,25,0.82);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-card {
+  background: #181c23;
+  padding: 32px 30px 28px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 36px #0007;
+  max-width: 330px;
+  text-align: center;
+}
+.modal-card h2 {
+  color: #fff;
+  font-size: 1.19rem;
+  margin-bottom: 18px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.modal-btns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+.modal-btn {
+  padding: 10px 23px;
+  border-radius: 10px;
+  background: #1da1f2;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  font-size: 1.03rem;
+  cursor: pointer;
+  transition: background 0.16s;
+}
+.modal-btn.alt {
+  background: #232b36;
+  color: #d6d7da;
+}
+.modal-btn:hover { background: #1768b7; }
+.modal-btn.alt:hover { background: #222b; color: #fff; }
