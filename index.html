@@ -1,23 +1,84 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="generator" content="GitLab Pages">
-    <title>Plain HTML site using GitLab Pages</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <div class="navbar">
-      <a href="https://pages.gitlab.io/plain-html/">Plain HTML Example</a>
-      <a href="https://gitlab.com/pages/plain-html/">Repository</a>
-      <a href="https://gitlab.com/pages/">Other Examples</a>
-    </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twister</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Supabase for media uploads -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Firebase Modular SDKs for posts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-    <h1>Hello World!</h1>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7f60EMEI-lv4H8kCxjgC7SNMSYHAB0Qc",
+      authDomain: "twister-84a02.firebaseapp.com",
+      projectId: "twister-84a02",
+      storageBucket: "twister-84a02.appspot.com",
+      messagingSenderId: "102751535632",
+      appId: "1:102751535632:web:86be6786793ccc52640095",
+      measurementId: "G-YRXD8FE8WM"
+    };
 
-    <p>
-      This is a simple plain-HTML website on GitLab Pages, without any fancy static site generator.
-    </p>
-  </body>
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = getFirestore(window.firebaseApp);
+    window.analytics = getAnalytics(window.firebaseApp);
+  </script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar-left">
+      <h1 class="logo">Twister</h1>
+      <nav class="nav-links">
+        <button class="nav-btn active" data-section="home">🏠 Home</button>
+        <button class="nav-btn" data-section="explore">🔍 Explore</button>
+        <button class="nav-btn" data-section="notifications">🔔 Notifications</button>
+        <button class="nav-btn" data-section="messages">✉️ Messages</button>
+        <button class="nav-btn" data-section="bookmarks">🔖 Bookmarks</button>
+        <button class="nav-btn" data-section="lists">📃 Lists</button>
+        <button class="nav-btn" data-section="profile">👤 Profile</button>
+        <button class="nav-btn" data-section="more">⚙️ More</button>
+      </nav>
+    </aside>
+
+    <main class="main-feed">
+      <section id="section-home" class="section active">
+        <div class="post-input">
+          <textarea id="tweetText" placeholder="What's happening?" rows="3"></textarea>
+          <div class="media-upload">
+            <input type="file" id="mediaInput" accept="image/*,video/*" />
+            <div id="mediaPreview"></div>
+          </div>
+          <button id="tweetButton" class="tweet-btn">Post</button>
+        </div>
+        <div id="feed" class="feed"></div>
+      </section>
+
+      <section id="section-explore" class="section"></section>
+      <section id="section-notifications" class="section"></section>
+      <section id="section-messages" class="section"><div class="empty">No messages yet.</div></section>
+      <section id="section-bookmarks" class="section"></section>
+      <section id="section-lists" class="section"><div class="empty">No lists yet.</div></section>
+
+      <section id="section-profile" class="section">
+        <div class="profile-card">
+          <img id="profilePic" class="profile-pic" src="https://placehold.co/80x80" />
+          <input type="file" id="newPfp" accept="image/*" />
+          <input type="text" id="displayName" placeholder="Display Name" />
+          <input type="text" id="username" placeholder="@username" />
+          <textarea id="bio" placeholder="Bio"></textarea>
+          <button onclick="saveProfile()" class="tweet-btn">Save Profile</button>
+        </div>
+        <h3>Your Posts</h3>
+        <div id="profilePosts" class="feed"></div>
+      </section>
+
+      <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
+    </main>
+  </div>
+</body>
 </html>
-
