@@ -106,3 +106,68 @@ input::placeholder, textarea::placeholder {
 .navbar a:hover {
     color: #ccc;
 }
+/* === EXPLORE PAGE STYLING === */
+.explore-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #222;
+  margin-bottom: 20px;
+}
+
+.explore-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #fff;
+}
+
+.explore-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.explore-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.profile-pic.small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.explore-columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.explore-column {
+  background: #111;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.explore-column h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #1da1f2;
+}
+
+.explore-feed {
+  min-height: 150px;
+  color: #aaa;
+}
+
