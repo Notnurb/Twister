@@ -5,29 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- Supabase for media uploads -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Firebase Modular SDKs for posts -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyD7f60EMEI-lv4H8kCxjgC7SNMSYHAB0Qc",
-      authDomain: "twister-84a02.firebaseapp.com",
-      projectId: "twister-84a02",
-      storageBucket: "twister-84a02.appspot.com",
-      messagingSenderId: "102751535632",
-      appId: "1:102751535632:web:86be6786793ccc52640095",
-      measurementId: "G-YRXD8FE8WM"
-    };
-
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.db = getFirestore(window.firebaseApp);
-    window.analytics = getAnalytics(window.firebaseApp);
-  </script>
-  <script type="module" src="script.js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
   <div class="layout">
@@ -44,7 +22,6 @@
         <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
     </aside>
-
     <main class="main-feed">
       <section id="section-home" class="section active">
         <div class="post-input">
