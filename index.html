@@ -5,19 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Supabase for media uploads -->
+  <!-- Supabase for auth & media -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Firebase Modular SDKs for posts - DO NOT LEAK SECRETS HERE -->
+  <!-- Firebase SDKs for posts (optional, if you want to keep posts in Firestore) -->
   <script type="module">
-    // TODO: Move Firebase config to a secure location or restrict API key in Google Cloud Console!
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-    // It's best practice to NOT expose your config in public files!
-    // Store this in a secure backend, .env file, or restrict in GCP.
     const firebaseConfig = {
       apiKey: "YOUR_SECURE_API_KEY",
       authDomain: "twister-84a02.firebaseapp.com",
@@ -27,16 +20,37 @@
       appId: "1:102751535632:web:86be6786793ccc52640095",
       measurementId: "G-YRXD8FE8WM"
     };
-
     window.firebaseApp = initializeApp(firebaseConfig);
     window.db = getFirestore(window.firebaseApp);
-    window.analytics = getAnalytics(window.firebaseApp);
   </script>
-
   <script type="module" src="script.js"></script>
 </head>
 <body>
-  <div class="layout">
+  <!-- Auth Container -->
+  <div id="auth-container" class="auth-bg">
+    <div class="auth-card">
+      <h2>Welcome to Twister!</h2>
+      <div id="auth-tabs">
+        <button id="show-login" class="auth-tab active">Log In</button>
+        <button id="show-signup" class="auth-tab">Sign Up</button>
+      </div>
+      <form id="login-form" class="auth-form">
+        <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit">Log In</button>
+      </form>
+      <form id="signup-form" class="auth-form" style="display: none;">
+        <input type="text" id="signup-username" placeholder="Username" autocomplete="username" required>
+        <input type="email" id="signup-email" placeholder="Email" autocomplete="email" required>
+        <input type="password" id="signup-password" placeholder="Password" autocomplete="new-password" required>
+        <button type="submit">Sign Up</button>
+      </form>
+      <div id="auth-error"></div>
+    </div>
+  </div>
+
+  <!-- Main App Container (hidden until logged in) -->
+  <div class="layout" id="app-container" style="display:none;">
     <aside class="sidebar-left">
       <h1 class="logo">Twister</h1>
       <nav class="nav-links">
@@ -49,6 +63,7 @@
         <button class="nav-btn" data-section="profile">👤 Profile</button>
         <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
+      <button id="logout-btn" class="logout-btn">Log Out</button>
     </aside>
 
     <main class="main-feed">
@@ -63,17 +78,11 @@
         </div>
         <div id="feed" class="feed"></div>
       </section>
-
       <section id="section-explore" class="section"></section>
       <section id="section-notifications" class="section"></section>
-      <section id="section-messages" class="section">
-        <div class="empty">No messages yet.</div>
-      </section>
+      <section id="section-messages" class="section"><div class="empty">No messages yet.</div></section>
       <section id="section-bookmarks" class="section"></section>
-      <section id="section-lists" class="section">
-        <div class="empty">No lists yet.</div>
-      </section>
-
+      <section id="section-lists" class="section"><div class="empty">No lists yet.</div></section>
       <section id="section-profile" class="section">
         <div class="profile-card">
           <img id="profilePic" class="profile-pic" src="https://placehold.co/80x80" />
@@ -86,10 +95,7 @@
         <h3>Your Posts</h3>
         <div id="profilePosts" class="feed"></div>
       </section>
-
-      <section id="section-more" class="section">
-        <div class="empty">More tools coming soon.</div>
-      </section>
+      <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
     </main>
   </div>
 </body>
