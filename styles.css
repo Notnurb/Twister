@@ -5,7 +5,7 @@ html, body {
   padding: 0;
   height: 100%;
   font-family: 'Ubuntu', system-ui, sans-serif;
-  background: #101214;
+  background: #000;    /* Pure black background everywhere */
   color: #e6e6ea;
 }
 
@@ -13,19 +13,19 @@ html, body {
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #101214;
+  background: #000;
 }
 
 /* SIDEBAR */
 .sidebar-left {
   width: 240px;
-  background: #181c23;
+  background: #111; /* darker, nearly black */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   padding: 34px 16px 22px 18px;
   min-height: 100vh;
-  border-right: 2px solid #232b36;
+  border-right: 2px solid #181818;
 }
 
 .logo {
@@ -35,9 +35,9 @@ html, body {
   font-weight: 700;
   margin-bottom: 30px;
   letter-spacing: 1.3px;
-  text-shadow: 0 2px 10px #1da1f266;
 }
 
+/* SIDEBAR NAV */
 .nav-links {
   width: 100%;
   display: flex;
@@ -55,7 +55,7 @@ html, body {
   font-size: 1.13rem;
   font-weight: 500;
   text-align: left;
-  transition: background 0.15s, color 0.13s;
+  transition: background 0.13s, color 0.13s;
   cursor: pointer;
   outline: none;
 }
@@ -68,7 +68,7 @@ html, body {
 .main-feed {
   flex: 1 1 auto;
   min-width: 0;
-  background: #101214;
+  background: #000;
   padding: 38px 0 0 0;
   display: flex;
   flex-direction: column;
@@ -81,6 +81,7 @@ html, body {
   display: none;
   flex-direction: column;
   margin-bottom: 34px;
+  background: none;
 }
 .section.active {
   display: flex;
@@ -95,9 +96,9 @@ html, body {
 
 /* POST INPUT */
 .post-input {
-  background: #181c23;
+  background: #111;
   border-radius: 14px;
-  box-shadow: 0 4px 12px #0002;
+  box-shadow: none;
   margin-bottom: 26px;
   padding: 22px 24px 18px 24px;
   display: flex;
@@ -112,13 +113,14 @@ html, body {
   font-size: 1.13rem;
   border-radius: 13px;
   padding: 14px;
-  background: #232a35;
+  background: #222;
   color: #fff;
   font-family: inherit;
   outline: none;
   margin-bottom: 2px;
 }
 
+/* MEDIA UPLOAD */
 .media-upload {
   display: flex;
   align-items: center;
@@ -134,9 +136,10 @@ html, body {
   max-height: 102px;
   border-radius: 10px;
   display: block;
-  box-shadow: 0 2px 8px #0003;
+  box-shadow: none;
 }
 
+/* BUTTONS */
 .tweet-btn {
   background: #1da1f2;
   color: #fff;
@@ -146,8 +149,8 @@ html, body {
   font-weight: bold;
   padding: 12px 0;
   margin-top: 4px;
-  transition: background 0.17s, box-shadow 0.12s;
-  box-shadow: 0 1.5px 6px #1da1f233;
+  transition: background 0.13s;
+  box-shadow: none;
   cursor: pointer;
   outline: none;
 }
@@ -164,9 +167,9 @@ html, body {
 }
 
 .tweet {
-  background: #181c23;
+  background: #111;
   border-radius: 14px;
-  box-shadow: 0 4px 12px #0001;
+  box-shadow: none;
   padding: 16px 20px;
   margin-bottom: 0;
   display: flex;
@@ -194,7 +197,7 @@ html, body {
   cursor: pointer;
   padding: 3px 8px;
   border-radius: 7px;
-  transition: background 0.15s, color 0.13s;
+  transition: background 0.12s, color 0.13s;
 }
 .tweet-footer button:hover {
   background: #1da1f2;
@@ -202,21 +205,21 @@ html, body {
 }
 
 .comment, .reply {
-  background: #222b33;
+  background: #222;
   color: #a7b3c6;
   padding: 6px 13px;
   margin-top: 10px;
   border-radius: 8px;
   font-size: 0.97rem;
-  box-shadow: 0 2px 7px #0002;
+  box-shadow: none;
 }
 
 /* PROFILE */
 .profile-card {
-  background: #181c23;
+  background: #111;
   border-radius: 14px;
   padding: 25px 22px 21px 22px;
-  box-shadow: 0 4px 16px #0002;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -239,8 +242,8 @@ html, body {
   max-width: 295px;
   padding: 11px;
   border-radius: 9px;
-  border: 1.2px solid #222b33;
-  background: #232a35;
+  border: 1.2px solid #222;
+  background: #222;
   color: #fff;
   font-size: 1rem;
   outline: none;
@@ -266,7 +269,7 @@ html, body {
     min-height: unset;
     width: 100%;
     border-right: none;
-    border-bottom: 2px solid #232b36;
+    border-bottom: 2px solid #181818;
     align-items: center;
     justify-content: space-between;
     padding: 12px 10px;
