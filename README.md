@@ -9,4 +9,7 @@ How to post.
 3. Type what you would like to post inside it
 4. Then hit post
 5. Other people can now, Heart, Reply, Comment and bookmark your video
-   ![Guide Video 1](https://github.com/user-attachments/assets/f80c8c70-32d0-4989-bfde-ac7fc4f77e75)
+
+![Guide Video 1](https://github.com/user-attachments/assets/f80c8c70-32d0-4989-bfde-ac7fc4f77e75)
+
+
