@@ -1,173 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap');
 
-/* General Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Ubuntu', system-ui, sans-serif;
+  background: #000;
+  color: #e6e6ea;
 }
 
-/* Base styles */
-body {
-    background-color: #000;
-    color: #fff;
-    font-family: 'Ubuntu', system-ui, sans-serif;
-    line-height: 1.6;
-    padding: 1rem;
-}
-
-a {
-    color: #fff;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-/* Header */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #222;
-}
-
-/* Buttons */
-button, .btn {
-    background: transparent;
-    color: #fff;
-    border: 1px solid #555;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-button:hover, .btn:hover {
-    background: #111;
-    border-color: #888;
-}
-
-/* Input fields */
-input, textarea {
-    background: #111;
-    color: #fff;
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 0.5rem;
-    width: 100%;
-}
-
-input::placeholder, textarea::placeholder {
-    color: #aaa;
-}
-
-/* Cards & Feed Items */
-.card, .post {
-    background: #111;
-    border: 1px solid #222;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-/* Profile Pic */
-.profile-pic {
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    object-fit: cover;
-}
-
-/* Grid Layout for Feed */
-.feed {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-}
-
-/* Navigation */
-.navbar {
-    display: flex;
-    justify-content: space-around;
-    background-color: #000;
-    padding: 1rem 0;
-    border-top: 1px solid #222;
-}
-
-.navbar a {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #fff;
-}
-
-.navbar a:hover {
-    color: #ccc;
-}
-/* === EXPLORE PAGE STYLING === */
-.explore-header {
+/* LAYOUT */
+.layout {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  min-height: 100vh;
+  background: #000;
+}
+
+/* SIDEBAR */
+.sidebar-left {
+  width: 240px;
   background: #111;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #222;
-  margin-bottom: 20px;
-}
-
-.explore-left {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  color: #fff;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 34px 16px 22px 18px;
+  min-height: 100vh;
+  border-right: 2px solid #181818;
 }
 
-.explore-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #fff;
-}
-
-.explore-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #ccc;
-}
-
-.profile-pic.small {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.explore-columns {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.explore-column {
-  background: #111;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #222;
-}
-
-.explore-column h3 {
-  font-size: 16px;
-  margin-bottom: 10px;
+.logo {
+  font-family: 'Ubuntu', system-ui, sans-serif;
+  font-size: 2.2rem;
   color: #1da1f2;
+  font-weight: 700;
+  margin-bottom: 30px;
+  letter-spacing: 1.3px;
 }
 
-.explore-feed {
-  min-height: 150px;
-  color: #aaa;
+/* SIDEBAR NAV */
+.nav-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+.nav-btn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 13px;
+  background: none;
+  color: #e6e6ea;
+  border: none;
+  font-size: 1.13rem;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.13s, color 0.13s;
+  cursor: pointer;
+  outline: none;
+}
+.nav-btn:hover, .nav-btn.active {
+  background: #1da1f2;
+  color: #fff;
+}
+
+/* MAIN APP */
+.main-feed {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: #000;
+  padding: 38px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section {
+  width: 100%;
+  max-width: 600px;
+  display: none;
+  flex-direction: column;
+  margin-bottom: 34px;
+  background: none;
+}
+.section.active {
+  display: flex;
+}
+
+.empty {
+  color: #8fa1b2;
+  text-align: center;
+  margin: 47px 0;
+  font-size: 1.18rem;
+}
+
+/* POST INPUT */
+.post-input {
+  background: #111;
+  border-radius: 14px;
+  box-shadow: none;
+  margin-bottom: 26px;
+  padding: 22px 24px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#tweetText {
+  border: none;
+  resize: vertical;
+  min-height: 48px;
+  font-size: 1.13rem;
+  border-radius: 13px;
+  padding: 14px;
+  background: #222;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 2px;
+}
+
+.media-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+#mediaInput {
+  font-size: 1rem;
+  color: #bbb;
+}
+#mediaPreview img, #mediaPreview video {
+  margin-top: 5px;
+  max-width: 164px;
+  max-height: 102px;
+  border-radius: 10px;
+  display: block;
+  box-shadow: none;
+}
+
+.tweet-btn {
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.13rem;
+  font-weight: bold;
+  padding: 12px 0;
+  margin-top: 4px;
+  transition: background 0.13s;
+  box-shadow: none;
+  cursor: pointer;
+  outline: none;
+}
+.tweet-btn:hover {
+  background: #1976d2;
+}
+
+/* FEED */
+.feed {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.tweet {
+  background: #111;
+  border-radius: 14px;
+  box-shadow: none;
+  padding: 16px 20px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  word-break: break-word;
+  font-size: 1.11rem;
+}
+
+.tweet strong {
+  color: #fff;
+  font-weight: 700;
+  margin-right: 8px;
+}
+.tweet-footer {
+  margin-top: 12px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.tweet-footer button {
+  background: none;
+  border: none;
+  color: #1da1f2;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 7px;
+  transition: background 0.12s, color 0.13s;
+}
+.tweet-footer button:hover {
+  background: #1da1f2;
+  color: #fff;
+}
+
+.comment, .reply {
+  background: #222;
+  color: #a7b3c6;
+  padding: 6px 13px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 0.97rem;
+  box-shadow: none;
+}
+
+/* PROFILE */
+.profile-card {
+  background: #111;
+  border-radius: 14px;
+  padding: 25px 22px 21px 22px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.profile-pic {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 14px;
+  border: 2px solid #1da1f2;
+  background: #222;
+}
+
+.profile-card input, .profile-card textarea {
+  margin: 4px 0;
+  width: 100%;
+  max-width: 295px;
+  padding: 11px;
+  border-radius: 9px;
+  border: 1.2px solid #222;
+  background: #222;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: 10px;
+}
+.profile-card input:focus, .profile-card textarea:focus {
+  border: 1.5px solid #1da1f2;
+  background: #1a2330;
+}
+
+.profile-card textarea {
+  min-height: 62px;
+  resize: vertical;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar-left {
+    flex-direction: row;
+    min-height: unset;
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #181818;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px;
+  }
+  .main-feed {
+    padding: 23px 0 0 0;
+    min-height: 80vh;
+  }
+}
+
+@media (max-width: 700px) {
+  .sidebar-left {
+    font-size: 0.99rem;
+    padding: 10px 4px;
+    width: 100vw;
+  }
+  .main-feed {
+    padding-top: 8px;
+    max-width: 100vw;
+  }
+  .section {
+    max-width: 100vw;
+    padding: 0 2vw;
+  }
+  .profile-card input, .profile-card textarea {
+    max-width: 96vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-left {
+    font-size: 0.94rem;
+    padding: 6px 1vw;
+  }
+}
