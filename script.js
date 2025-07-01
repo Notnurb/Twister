@@ -1,3 +1,22 @@
+window.addEventListener('DOMContentLoaded', () => {
+  // Show modal when entering the site
+  const modal = document.getElementById('setUserModal');
+  modal.style.display = 'flex';
+
+  document.getElementById('modalYes').onclick = () => {
+    modal.style.display = 'none';
+    // Go to profile section
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelector('.nav-btn[data-section="profile"]').classList.add('active');
+    document.getElementById('section-profile').classList.add('active');
+    if (typeof renderProfile === 'function') renderProfile();
+  };
+  document.getElementById('modalNo').onclick = () => {
+    modal.style.display = 'none';
+  };
+});
+
 // === SUPABASE AUTH CONFIG ===
 const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhanp0YnZveXVnYmJjcm91cHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTA4NjIsImV4cCI6MjA2Njg2Njg2Mn0.0DdBIpNFIUsAH1-M9NcfmKHnwv2XOc0TEk0flrq7H0I";
