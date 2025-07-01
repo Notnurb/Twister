@@ -1,161 +1,108 @@
+
+/* General Reset */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
+
+/* Base styles */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #000;
-  color: #fff;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Ubuntu', system-ui, sans-serif;
+    line-height: 1.6;
+    padding: 1rem;
 }
-.layout {
-  display: flex;
-  height: 100vh;
+
+a {
+    color: #fff;
+    text-decoration: none;
 }
-.sidebar-left {
-  width: 220px;
-  background-color: #111;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+
+a:hover {
+    text-decoration: underline;
 }
-.logo {
-  font-size: 24px;
-  margin-bottom: 20px;
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #222;
 }
-.nav-links {
-  display: flex;
-  flex-direction: column;
+
+/* Buttons */
+button, .btn {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
-.nav-btn {
-  background: none;
-  border: none;
-  color: #ccc;
-  font-size: 16px;
-  text-align: left;
-  margin-bottom: 10px;
-  padding: 10px 15px;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.2s;
+
+button:hover, .btn:hover {
+    background: #111;
+    border-color: #888;
 }
-.nav-btn:hover {
-  background-color: #222;
-  color: #fff;
+
+/* Input fields */
+input, textarea {
+    background: #111;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0.5rem;
+    width: 100%;
 }
-.nav-btn.active {
-  background-color: #1da1f2;
-  color: #fff;
+
+input::placeholder, textarea::placeholder {
+    color: #aaa;
 }
-.main-feed {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background: #000;
+
+/* Cards & Feed Items */
+.card, .post {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
-.section {
-  display: none;
-}
-.section.active {
-  display: block;
-}
-.post-input {
-  background-color: #111;
-  padding: 15px;
-  border: 1px solid #333;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #333;
-  background: #000;
-  color: #fff;
-  resize: vertical;
-}
-.tweet-btn {
-  background-color: #1da1f2;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 25px;
-  color: white;
-  font-weight: bold;
-  margin-top: 10px;
-  cursor: pointer;
-}
-.feed .tweet {
-  background: #111;
-  border: 1px solid #333;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-.tweet-footer {
-  margin-top: 10px;
-}
-.tweet-footer button {
-  background: none;
-  border: none;
-  color: #1da1f2;
-  margin-right: 10px;
-  cursor: pointer;
-}
-.comment, .reply {
-  margin-left: 15px;
-  font-size: 14px;
-  color: #aaa;
-}
-.profile-card {
-  background-color: #111;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #333;
-  margin-bottom: 20px;
-  max-width: 500px;
-}
+
+/* Profile Pic */
 .profile-pic {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 10px;
-}
-.profile-card input,
-.profile-card textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 6px;
-  background-color: #000;
-  color: #fff;
-  border: 1px solid #333;
-}
-.empty {
-  text-align: center;
-  color: #777;
-  padding: 20px;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
 }
 
-/* ---- Media upload & preview styles ---- */
-.media-upload {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-top: 10px;
+/* Grid Layout for Feed */
+.feed {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
 }
 
-#mediaInput {
-  color: #fff;
-  background: none;
+/* Navigation */
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    background-color: #000;
+    padding: 1rem 0;
+    border-top: 1px solid #222;
 }
 
-#mediaPreview img, #mediaPreview video {
-  max-width: 120px;
-  max-height: 90px;
-  margin-top: 8px;
-  border-radius: 10px;
-  border: 1px solid #222;
-  display: block;
+.navbar a {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+}
+
+.navbar a:hover {
+    color: #ccc;
 }
