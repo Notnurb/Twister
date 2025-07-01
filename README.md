@@ -42,6 +42,9 @@ Type your message in the big box at the top (“What’s happening?”).
 
 Click “Post” to share with everyone!
  Your new post will appear instantly in the feed.
+ 
+
+![Guide Video 1](https://github.com/user-attachments/assets/f80c8c70-32d0-4989-bfde-ac7fc4f77e75)
 
 
 
