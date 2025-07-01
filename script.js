@@ -58,8 +58,10 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById("section-" + btn.dataset.section).classList.add("active");
+
     if (btn.dataset.section === "profile") renderProfile();
     if (btn.dataset.section === "bookmarks") renderBookmarks();
+    if (btn.dataset.section === "explore") renderExplore();
   };
 });
 
@@ -121,7 +123,6 @@ function renderFeed() {
   });
 }
 
-// 🆕 Profile Picture Support
 function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
   let mediaHTML = "";
@@ -157,7 +158,33 @@ function renderPostHTML(post, id) {
   `;
 }
 
-// Like/Dislike/Comment/Reply
+function renderExplore() {
+  document.getElementById("exploreUsername").innerText = localUser.username;
+  document.getElementById("exploreProfilePic").src = localUser.profilePic;
+
+  const forYou = document.getElementById("exploreForYou");
+  const trending = document.getElementById("exploreTrending");
+  const news = document.getElementById("exploreNews");
+  const yourPosts = document.getElementById("exploreYourPosts");
+
+  forYou.innerHTML = trending.innerHTML = news.innerHTML = yourPosts.innerHTML = "<span>Loading...</span>";
+
+  const postsRef = collection(db, "posts");
+  const q = query(postsRef, orderBy("timestamp", "desc"));
+  getDocs(q).then(snapshot => {
+    const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    forYou.innerHTML = posts.slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
+    trending.innerHTML = [...posts].sort((a, b) => b.likes - a.likes).slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
+    news.innerHTML = posts.slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
+
+    const mine = posts.filter(p => p.author.username === localUser.username);
+    yourPosts.innerHTML = mine.length
+      ? mine.map(p => renderPostHTML(p, p.id)).join("")
+      : "<div class='empty'>You haven’t posted yet.</div>";
+  });
+}
+
 window.like = async (id) => {
   const postRef = doc(db, "posts", id);
   await updateDoc(postRef, { likes: increment(1) });
