@@ -247,3 +247,35 @@ function renderProfile() {
 }
 
 renderFeed();
+// --- Real-time Chat Setup (Firebase Realtime DB) ---
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+const dbRealtime = getDatabase(app);
+const messagesRef = ref(dbRealtime, "messages");
+
+const chatBox = document.getElementById("chatBox");
+const messageForm = document.getElementById("messageForm");
+const messageInput = document.getElementById("messageInput");
+
+if (messageForm && messageInput && chatBox) {
+  messageForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+    await push(messagesRef, {
+      user: localUser.username || "anon",
+      text: msg,
+      timestamp: Date.now()
+    });
+    messageInput.value = "";
+  });
+
+  onChildAdded(messagesRef, (data) => {
+    const { user, text } = data.val();
+    const div = document.createElement("div");
+    div.className = "chat-message" + (user === localUser.username ? " self" : "");
+    div.textContent = user + ": " + text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+}
