@@ -15,29 +15,31 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 
-// === CONFIG ===
+// ======= SETUP =======
 const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_KEY_HERE";
+const SUPABASE_ANON_KEY = "your_key_here"; // insert your key
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const app = getApp();
 const db = getFirestore(app);
 
-const localUser = {
+let localUser = {
   username: localStorage.getItem("username") || "@anon",
   displayName: localStorage.getItem("displayName") || "Anonymous",
   bio: localStorage.getItem("bio") || "",
   profilePic: localStorage.getItem("profilePic") || "https://via.placeholder.com/80",
 };
+
 let bookmarkedIDs = JSON.parse(localStorage.getItem("bookmarkedIDs") || "[]");
 
+let selectedMediaFile = null;
 const mediaInput = document.getElementById("mediaInput");
 const mediaPreview = document.getElementById("mediaPreview");
-let selectedMediaFile = null;
 
 mediaInput?.addEventListener("change", () => {
   mediaPreview.innerHTML = "";
-  if (mediaInput.files?.[0]) {
+  selectedMediaFile = null;
+  if (mediaInput.files && mediaInput.files[0]) {
     selectedMediaFile = mediaInput.files[0];
     const url = URL.createObjectURL(selectedMediaFile);
     if (selectedMediaFile.type.startsWith("image/")) {
@@ -48,13 +50,14 @@ mediaInput?.addEventListener("change", () => {
   }
 });
 
+// ======= NAVIGATION =======
 document.querySelectorAll(".nav-btn").forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     btn.classList.add("active");
     const section = document.getElementById("section-" + btn.dataset.section);
-    if (section) section.classList.add("active");
+    section?.classList.add("active");
 
     if (btn.dataset.section === "profile") renderProfile();
     if (btn.dataset.section === "bookmarks") renderBookmarks();
@@ -62,6 +65,7 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
   };
 });
 
+// ======= POSTING =======
 document.getElementById("tweetButton")?.addEventListener("click", async () => {
   const text = document.getElementById("tweetText").value.trim();
   if (!text && !selectedMediaFile) return;
@@ -74,7 +78,7 @@ document.getElementById("tweetButton")?.addEventListener("click", async () => {
     const ext = selectedMediaFile.name.split('.').pop();
     const filePath = `media/${postId}.${ext}`;
 
-    const { data, error } = await supabase.storage.from('media').upload(filePath, selectedMediaFile);
+    const { error } = await supabase.storage.from('media').upload(filePath, selectedMediaFile);
     if (error) return alert("Upload failed: " + error.message);
 
     mediaURL = `${SUPABASE_URL}/storage/v1/object/public/${filePath}`;
@@ -83,44 +87,39 @@ document.getElementById("tweetButton")?.addEventListener("click", async () => {
 
   await addDoc(collection(db, "posts"), {
     text,
+    timestamp: Date.now(),
     likes: 0,
     dislikes: 0,
     comments: [],
     replies: [],
-    timestamp: Date.now(),
-    author: localUser,
     mediaURL,
-    mediaType
+    mediaType,
+    author: localUser
   });
 
   document.getElementById("tweetText").value = "";
-  mediaPreview.innerHTML = "";
   mediaInput.value = "";
+  mediaPreview.innerHTML = "";
   selectedMediaFile = null;
 });
 
+// ======= POST RENDERING =======
 function renderFeed() {
   const postsRef = collection(db, "posts");
   const q = query(postsRef, orderBy("timestamp", "desc"));
   onSnapshot(q, (snapshot) => {
     const feed = document.getElementById("feed");
     feed.innerHTML = snapshot.empty ? "<div class='empty'>No posts yet.</div>" : "";
-    snapshot.forEach(docSnap => {
-      const post = docSnap.data();
-      const id = docSnap.id;
-      feed.innerHTML += renderPostHTML(post, id);
-    });
+    snapshot.forEach(doc => feed.innerHTML += renderPostHTML(doc.data(), doc.id));
   });
 }
 
 function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
-  let mediaHTML = "";
-  if (post.mediaURL && post.mediaType === "image") {
-    mediaHTML = `<img src="${post.mediaURL}" style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
-  } else if (post.mediaURL && post.mediaType === "video") {
-    mediaHTML = `<video src="${post.mediaURL}" controls style="max-width:100%; border-radius:12px; margin-top:8px;" ></video>`;
-  }
+  const media =
+    post.mediaURL && post.mediaType === "image" ? `<img src="${post.mediaURL}" style="max-width:100%; border-radius:12px; margin-top:8px;" />` :
+    post.mediaURL && post.mediaType === "video" ? `<video src="${post.mediaURL}" controls style="max-width:100%; border-radius:12px; margin-top:8px;"></video>` : "";
+
   return `
     <div class="tweet">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
@@ -131,7 +130,7 @@ function renderPostHTML(post, id) {
         </div>
       </div>
       <p>${post.text || ""}</p>
-      ${mediaHTML}
+      ${media}
       <div class="tweet-footer">
         <button onclick="like('${id}')">❤️ ${post.likes}</button>
         <button onclick="dislike('${id}')">👎 ${post.dislikes}</button>
@@ -143,6 +142,7 @@ function renderPostHTML(post, id) {
   `;
 }
 
+// ======= EXPLORE PAGE =======
 function renderExplore() {
   document.getElementById("exploreUsername").innerText = localUser.username;
   document.getElementById("exploreProfilePic").src = localUser.profilePic;
@@ -154,8 +154,8 @@ function renderExplore() {
 
   forYou.innerHTML = trending.innerHTML = news.innerHTML = yourPosts.innerHTML = "<span>Loading...</span>";
 
-  const postsRef = collection(db, "posts");
-  getDocs(query(postsRef, orderBy("timestamp", "desc"))).then(snapshot => {
+  const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+  getDocs(q).then(snapshot => {
     const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     forYou.innerHTML = posts.slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
@@ -163,26 +163,59 @@ function renderExplore() {
     news.innerHTML = posts.slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
 
     const mine = posts.filter(p => p.author.username === localUser.username);
-    yourPosts.innerHTML = mine.length
-      ? mine.map(p => renderPostHTML(p, p.id)).join("")
-      : "<div class='empty'>You haven’t posted yet.</div>";
+    yourPosts.innerHTML = mine.length ? mine.map(p => renderPostHTML(p, p.id)).join("") : "<div class='empty'>You haven’t posted yet.</div>";
   });
 }
 
-window.like = async (id) => await updateDoc(doc(db, "posts", id), { likes: increment(1) });
-window.dislike = async (id) => await updateDoc(doc(db, "posts", id), { dislikes: increment(1) });
+// ======= PROFILE + SAVE =======
+window.saveProfile = () => {
+  const username = document.getElementById("username").value || "@anon";
+  const displayName = document.getElementById("displayName").value || "Anonymous";
+  const bio = document.getElementById("bio").value;
+  const file = document.getElementById("newPfp").files[0];
 
-window.commentPrompt = async (id) => {
-  const text = prompt("Comment:");
-  if (text) await updateDoc(doc(db, "posts", id), { comments: arrayUnion(text) });
+  localStorage.setItem("username", username);
+  localStorage.setItem("displayName", displayName);
+  localStorage.setItem("bio", bio);
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      localStorage.setItem("profilePic", e.target.result);
+      document.getElementById("profilePic").src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  localUser = {
+    username,
+    displayName,
+    bio,
+    profilePic: localStorage.getItem("profilePic") || "https://via.placeholder.com/80"
+  };
 };
 
-window.replyPrompt = async (id) => {
-  const text = prompt("Reply:");
-  if (text) await updateDoc(doc(db, "posts", id), { replies: arrayUnion(text) });
-};
+function renderProfile() {
+  document.getElementById("username").value = localUser.username;
+  document.getElementById("displayName").value = localUser.displayName;
+  document.getElementById("bio").value = localUser.bio;
+  document.getElementById("profilePic").src = localUser.profilePic;
 
-window.toggleBookmark = (id) => {
+  const container = document.getElementById("profilePosts");
+  container.innerHTML = "";
+
+  const q = query(collection(db, "posts"), where("author.username", "==", localUser.username), orderBy("timestamp", "desc"));
+  getDocs(q).then(snapshot => {
+    if (snapshot.empty) {
+      container.innerHTML = "<div class='empty'>You haven’t posted yet.</div>";
+    } else {
+      snapshot.forEach(doc => container.innerHTML += renderPostHTML(doc.data(), doc.id));
+    }
+  });
+}
+
+// ======= BOOKMARKS =======
+window.toggleBookmark = id => {
   if (bookmarkedIDs.includes(id)) {
     bookmarkedIDs = bookmarkedIDs.filter(x => x !== id);
   } else {
@@ -210,50 +243,19 @@ function renderBookmarks() {
   });
 }
 
-window.saveProfile = () => {
-  const username = document.getElementById("username").value || "@anon";
-  const displayName = document.getElementById("displayName").value || "Anonymous";
-  const bio = document.getElementById("bio").value;
-  const file = document.getElementById("newPfp").files[0];
+// ======= LIKE / COMMENT / REPLY =======
+window.like = async id => await updateDoc(doc(db, "posts", id), { likes: increment(1) });
+window.dislike = async id => await updateDoc(doc(db, "posts", id), { dislikes: increment(1) });
 
-  localStorage.setItem("username", username);
-  localStorage.setItem("displayName", displayName);
-  localStorage.setItem("bio", bio);
-
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      localStorage.setItem("profilePic", e.target.result);
-      document.getElementById("profilePic").src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  localUser.username = username;
-  localUser.displayName = displayName;
-  localUser.bio = bio;
-  localUser.profilePic = localStorage.getItem("profilePic") || "https://via.placeholder.com/80";
+window.commentPrompt = async id => {
+  const text = prompt("Comment:");
+  if (text) await updateDoc(doc(db, "posts", id), { comments: arrayUnion(text) });
 };
 
-function renderProfile() {
-  document.getElementById("username").value = localUser.username;
-  document.getElementById("displayName").value = localUser.displayName;
-  document.getElementById("bio").value = localUser.bio;
-  document.getElementById("profilePic").src = localUser.profilePic;
+window.replyPrompt = async id => {
+  const text = prompt("Reply:");
+  if (text) await updateDoc(doc(db, "posts", id), { replies: arrayUnion(text) });
+};
 
-  const container = document.getElementById("profilePosts");
-  container.innerHTML = "";
-
-  const q = query(collection(db, "posts"), where("author.username", "==", localUser.username), orderBy("timestamp", "desc"));
-  getDocs(q).then(snapshot => {
-    if (snapshot.empty) {
-      container.innerHTML = "<div class='empty'>You haven’t posted yet.</div>";
-      return;
-    }
-    snapshot.forEach(doc => {
-      container.innerHTML += renderPostHTML(doc.data(), doc.id);
-    });
-  });
-}
-
+// Start
 renderFeed();
