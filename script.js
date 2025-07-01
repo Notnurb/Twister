@@ -15,17 +15,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 
-// ----- SUPABASE CONFIG -----
+// === CONFIG ===
 const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+const SUPABASE_ANON_KEY = "YOUR_KEY_HERE";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ----- FIRESTORE CONFIG -----
 const app = getApp();
 const db = getFirestore(app);
 
-const feed = document.getElementById("feed");
-let localUser = {
+const localUser = {
   username: localStorage.getItem("username") || "@anon",
   displayName: localStorage.getItem("displayName") || "Anonymous",
   bio: localStorage.getItem("bio") || "",
@@ -37,16 +35,14 @@ const mediaInput = document.getElementById("mediaInput");
 const mediaPreview = document.getElementById("mediaPreview");
 let selectedMediaFile = null;
 
-mediaInput.addEventListener("change", () => {
+mediaInput?.addEventListener("change", () => {
   mediaPreview.innerHTML = "";
-  selectedMediaFile = null;
-  if (mediaInput.files && mediaInput.files[0]) {
+  if (mediaInput.files?.[0]) {
     selectedMediaFile = mediaInput.files[0];
-    const file = selectedMediaFile;
-    const url = URL.createObjectURL(file);
-    if (file.type.startsWith("image/")) {
+    const url = URL.createObjectURL(selectedMediaFile);
+    if (selectedMediaFile.type.startsWith("image/")) {
       mediaPreview.innerHTML = `<img src="${url}" alt="preview" />`;
-    } else if (file.type.startsWith("video/")) {
+    } else if (selectedMediaFile.type.startsWith("video/")) {
       mediaPreview.innerHTML = `<video src="${url}" controls />`;
     }
   }
@@ -57,7 +53,8 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     btn.classList.add("active");
-    document.getElementById("section-" + btn.dataset.section).classList.add("active");
+    const section = document.getElementById("section-" + btn.dataset.section);
+    if (section) section.classList.add("active");
 
     if (btn.dataset.section === "profile") renderProfile();
     if (btn.dataset.section === "bookmarks") renderBookmarks();
@@ -65,25 +62,21 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
   };
 });
 
-document.getElementById("tweetButton").onclick = async () => {
+document.getElementById("tweetButton")?.addEventListener("click", async () => {
   const text = document.getElementById("tweetText").value.trim();
   if (!text && !selectedMediaFile) return;
+
   let mediaURL = null;
   let mediaType = null;
 
   if (selectedMediaFile) {
-    const postId = "post_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
+    const postId = "post_" + Date.now();
     const ext = selectedMediaFile.name.split('.').pop();
     const filePath = `media/${postId}.${ext}`;
 
-    const { data, error } = await supabase.storage.from('media').upload(filePath, selectedMediaFile, {
-      cacheControl: '3600',
-      upsert: false
-    });
-    if (error) {
-      alert("Upload failed: " + error.message);
-      return;
-    }
+    const { data, error } = await supabase.storage.from('media').upload(filePath, selectedMediaFile);
+    if (error) return alert("Upload failed: " + error.message);
+
     mediaURL = `${SUPABASE_URL}/storage/v1/object/public/${filePath}`;
     mediaType = selectedMediaFile.type.startsWith("image/") ? "image" : "video";
   }
@@ -104,17 +97,14 @@ document.getElementById("tweetButton").onclick = async () => {
   mediaPreview.innerHTML = "";
   mediaInput.value = "";
   selectedMediaFile = null;
-};
+});
 
 function renderFeed() {
   const postsRef = collection(db, "posts");
   const q = query(postsRef, orderBy("timestamp", "desc"));
   onSnapshot(q, (snapshot) => {
-    feed.innerHTML = "";
-    if (snapshot.empty) {
-      feed.innerHTML = "<div class='empty'>No posts yet.</div>";
-      return;
-    }
+    const feed = document.getElementById("feed");
+    feed.innerHTML = snapshot.empty ? "<div class='empty'>No posts yet.</div>" : "";
     snapshot.forEach(docSnap => {
       const post = docSnap.data();
       const id = docSnap.id;
@@ -127,19 +117,16 @@ function renderPostHTML(post, id) {
   const isBookmarked = bookmarkedIDs.includes(id);
   let mediaHTML = "";
   if (post.mediaURL && post.mediaType === "image") {
-    mediaHTML = `<img src="${post.mediaURL}" alt="media" style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" />`;
+    mediaHTML = `<img src="${post.mediaURL}" style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
   } else if (post.mediaURL && post.mediaType === "video") {
-    mediaHTML = `<video src="${post.mediaURL}" controls style="max-width:100%; max-height:280px; border-radius:12px; margin-top:8px;" ></video>`;
+    mediaHTML = `<video src="${post.mediaURL}" controls style="max-width:100%; border-radius:12px; margin-top:8px;" ></video>`;
   }
-
   return `
     <div class="tweet">
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-        <img src="${post.author.profilePic || 'https://via.placeholder.com/80'}"
-             class="profile-pic"
-             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <img src="${post.author.profilePic}" class="profile-pic" style="width:40px; height:40px;" />
         <div>
-          <strong>${post.author.displayName}</strong><br />
+          <strong>${post.author.displayName}</strong><br/>
           <span style="color:#888;">${post.author.username}</span>
         </div>
       </div>
@@ -152,8 +139,6 @@ function renderPostHTML(post, id) {
         <button onclick="replyPrompt('${id}')">↩️ ${post.replies.length}</button>
         <button onclick="toggleBookmark('${id}')">${isBookmarked ? '🔖 Bookmarked' : '🔖 Bookmark'}</button>
       </div>
-      ${post.comments.map(c => `<div class="comment">💬 ${c}</div>`).join('')}
-      ${post.replies.map(r => `<div class="reply">↩️ ${r}</div>`).join('')}
     </div>
   `;
 }
@@ -170,8 +155,7 @@ function renderExplore() {
   forYou.innerHTML = trending.innerHTML = news.innerHTML = yourPosts.innerHTML = "<span>Loading...</span>";
 
   const postsRef = collection(db, "posts");
-  const q = query(postsRef, orderBy("timestamp", "desc"));
-  getDocs(q).then(snapshot => {
+  getDocs(query(postsRef, orderBy("timestamp", "desc"))).then(snapshot => {
     const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     forYou.innerHTML = posts.slice(0, 3).map(p => renderPostHTML(p, p.id)).join("");
@@ -185,26 +169,19 @@ function renderExplore() {
   });
 }
 
-window.like = async (id) => {
-  const postRef = doc(db, "posts", id);
-  await updateDoc(postRef, { likes: increment(1) });
-};
-window.dislike = async (id) => {
-  const postRef = doc(db, "posts", id);
-  await updateDoc(postRef, { dislikes: increment(1) });
-};
+window.like = async (id) => await updateDoc(doc(db, "posts", id), { likes: increment(1) });
+window.dislike = async (id) => await updateDoc(doc(db, "posts", id), { dislikes: increment(1) });
+
 window.commentPrompt = async (id) => {
-  const text = prompt("Enter a comment:");
-  if (!text) return;
-  const postRef = doc(db, "posts", id);
-  await updateDoc(postRef, { comments: arrayUnion(text) });
+  const text = prompt("Comment:");
+  if (text) await updateDoc(doc(db, "posts", id), { comments: arrayUnion(text) });
 };
+
 window.replyPrompt = async (id) => {
-  const text = prompt("Enter a reply:");
-  if (!text) return;
-  const postRef = doc(db, "posts", id);
-  await updateDoc(postRef, { replies: arrayUnion(text) });
+  const text = prompt("Reply:");
+  if (text) await updateDoc(doc(db, "posts", id), { replies: arrayUnion(text) });
 };
+
 window.toggleBookmark = (id) => {
   if (bookmarkedIDs.includes(id)) {
     bookmarkedIDs = bookmarkedIDs.filter(x => x !== id);
@@ -216,47 +193,46 @@ window.toggleBookmark = (id) => {
 };
 
 function renderBookmarks() {
-  const el = document.getElementById("section-bookmarks");
-  el.innerHTML = "<div class='feed'></div>";
-  const container = el.querySelector(".feed");
-  if (bookmarkedIDs.length === 0) {
-    container.innerHTML = "<div class='empty'>No bookmarks saved.</div>";
+  const container = document.getElementById("section-bookmarks");
+  container.innerHTML = "<div class='feed'></div>";
+  const feed = container.querySelector(".feed");
+
+  if (!bookmarkedIDs.length) {
+    feed.innerHTML = "<div class='empty'>No bookmarks saved.</div>";
     return;
   }
-  bookmarkedIDs.forEach(async (id) => {
-    const postRef = doc(db, "posts", id);
-    const postSnap = await getDoc(postRef);
-    if (postSnap.exists()) {
-      container.innerHTML += renderPostHTML(postSnap.data(), id);
+
+  bookmarkedIDs.forEach(async id => {
+    const snap = await getDoc(doc(db, "posts", id));
+    if (snap.exists()) {
+      feed.innerHTML += renderPostHTML(snap.data(), id);
     }
   });
 }
 
-window.saveProfile = function () {
+window.saveProfile = () => {
   const username = document.getElementById("username").value || "@anon";
   const displayName = document.getElementById("displayName").value || "Anonymous";
   const bio = document.getElementById("bio").value;
-  const pfpFile = document.getElementById("newPfp").files[0];
+  const file = document.getElementById("newPfp").files[0];
 
   localStorage.setItem("username", username);
   localStorage.setItem("displayName", displayName);
   localStorage.setItem("bio", bio);
 
-  if (pfpFile) {
+  if (file) {
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = (e) => {
       localStorage.setItem("profilePic", e.target.result);
       document.getElementById("profilePic").src = e.target.result;
     };
-    reader.readAsDataURL(pfpFile);
+    reader.readAsDataURL(file);
   }
 
-  localUser = {
-    username,
-    displayName,
-    bio,
-    profilePic: localStorage.getItem("profilePic") || "https://via.placeholder.com/80"
-  };
+  localUser.username = username;
+  localUser.displayName = displayName;
+  localUser.bio = bio;
+  localUser.profilePic = localStorage.getItem("profilePic") || "https://via.placeholder.com/80";
 };
 
 function renderProfile() {
@@ -268,15 +244,14 @@ function renderProfile() {
   const container = document.getElementById("profilePosts");
   container.innerHTML = "";
 
-  const postsRef = collection(db, "posts");
-  const q = query(postsRef, where("author.username", "==", localUser.username), orderBy("timestamp", "desc"));
+  const q = query(collection(db, "posts"), where("author.username", "==", localUser.username), orderBy("timestamp", "desc"));
   getDocs(q).then(snapshot => {
     if (snapshot.empty) {
       container.innerHTML = "<div class='empty'>You haven’t posted yet.</div>";
       return;
     }
-    snapshot.forEach(docSnap => {
-      container.innerHTML += renderPostHTML(docSnap.data(), docSnap.id);
+    snapshot.forEach(doc => {
+      container.innerHTML += renderPostHTML(doc.data(), doc.id);
     });
   });
 }
