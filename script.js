@@ -1,169 +1,188 @@
-window.addEventListener('DOMContentLoaded', () => {
-  // Show modal when entering the site
-  const modal = document.getElementById('setUserModal');
-  modal.style.display = 'flex';
+// ========== BASIC TWISTER SINGLE-PAGE LOGIC (NO AUTH, LOCAL STORAGE) ==========
 
-  document.getElementById('modalYes').onclick = () => {
-    modal.style.display = 'none';
-    // Go to profile section
+// Navigation: Switch sections on sidebar click
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const section = btn.dataset.section;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelector('.nav-btn[data-section="profile"]').classList.add('active');
-    document.getElementById('section-profile').classList.add('active');
-    if (typeof renderProfile === 'function') renderProfile();
-  };
-  document.getElementById('modalNo').onclick = () => {
-    modal.style.display = 'none';
-  };
+    document.getElementById('section-' + section).classList.add('active');
+    if (section === "profile") renderProfile();
+    if (section === "home") renderFeed();
+  });
 });
 
-// === SUPABASE AUTH CONFIG ===
-const SUPABASE_URL = "https://iajztbvoyugbbcrouppm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhanp0YnZveXVnYmJjcm91cHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTA4NjIsImV4cCI6MjA2Njg2Njg2Mn0.0DdBIpNFIUsAH1-M9NcfmKHnwv2XOc0TEk0flrq7H0I";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ------------- PROFILE LOGIC -------------
+function saveProfile() {
+  const displayName = document.getElementById('displayName').value.trim();
+  const username = document.getElementById('username').value.trim();
+  const bio = document.getElementById('bio').value.trim();
+  const profilePicFile = document.getElementById('newPfp').files[0];
+  let profilePicUrl = localStorage.getItem('profilePic') || 'https://placehold.co/80x80';
 
-// Helper: Hide/Show elements
-function showApp(loggedIn) {
-  document.getElementById("auth-container").style.display = loggedIn ? "none" : "flex";
-  document.getElementById("app-container").style.display = loggedIn ? "flex" : "none";
+  if (profilePicFile) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      localStorage.setItem('profilePic', e.target.result);
+      document.getElementById('profilePic').src = e.target.result;
+    };
+    reader.readAsDataURL(profilePicFile);
+    profilePicUrl = ""; // Will be set when loaded
+  }
+
+  localStorage.setItem('displayName', displayName || 'Anonymous');
+  localStorage.setItem('username', username || '@anon');
+  localStorage.setItem('bio', bio);
+
+  alert('Profile saved!');
+  renderProfile();
 }
 
-// ==== AUTH FLOW ====
-
-const loginForm = document.getElementById('login-form');
-const signupForm = document.getElementById('signup-form');
-const showLogin = document.getElementById('show-login');
-const showSignup = document.getElementById('show-signup');
-const authError = document.getElementById('auth-error');
-
-// Tab switching
-showLogin.onclick = () => {
-  showLogin.classList.add('active');
-  showSignup.classList.remove('active');
-  loginForm.style.display = 'flex';
-  signupForm.style.display = 'none';
-  authError.textContent = '';
-};
-showSignup.onclick = () => {
-  showSignup.classList.add('active');
-  showLogin.classList.remove('active');
-  signupForm.style.display = 'flex';
-  loginForm.style.display = 'none';
-  authError.textContent = '';
-};
-
-// Handle signup
-signupForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value.trim();
-  const username = document.getElementById('signup-username').value.trim();
-  if (!email || !password || !username) return;
-  authError.textContent = "Signing up...";
-
-  // Supabase sign up
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { username } }
-  });
-  if (error) {
-    authError.textContent = error.message;
-  } else {
-    authError.textContent = "Check your email to confirm!";
-  }
-};
-
-// Handle login
-loginForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value.trim();
-  authError.textContent = "Logging in...";
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    authError.textContent = error.message;
-  } else {
-    authError.textContent = "";
-    showApp(true);
-    loadUserProfile();
-    renderFeed();
-  }
-};
-
-// Handle logout
-document.getElementById("logout-btn").onclick = async () => {
-  await supabase.auth.signOut();
-  showApp(false);
-};
-
-// Check session on load
-supabase.auth.getSession().then(({ data: { session } }) => {
-  showApp(!!session);
-  if (session) {
-    loadUserProfile();
-    renderFeed();
-  }
-});
-
-// Listen for auth state changes (in case of new tab or refresh)
-supabase.auth.onAuthStateChange((event, session) => {
-  showApp(!!session);
-  if (session) {
-    loadUserProfile();
-    renderFeed();
-  }
-});
-
-// ==== USER PROFILE ====
-// Store/display profile info in localStorage for demo (could also use Supabase user_metadata)
-function loadUserProfile() {
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user) {
-      localStorage.setItem("username", user.user_metadata?.username || ("@" + user.email.split('@')[0]));
-      localStorage.setItem("displayName", user.user_metadata?.username || ("@" + user.email.split('@')[0]));
-      localStorage.setItem("bio", "");
-      localStorage.setItem("profilePic", "https://via.placeholder.com/80");
-      localUser = {
-        username: localStorage.getItem("username"),
-        displayName: localStorage.getItem("displayName"),
-        bio: localStorage.getItem("bio"),
-        profilePic: localStorage.getItem("profilePic")
-      };
-    }
-  });
+// Render Profile Page Data
+function renderProfile() {
+  document.getElementById('profilePic').src = localStorage.getItem('profilePic') || 'https://placehold.co/80x80';
+  document.getElementById('displayName').value = localStorage.getItem('displayName') || '';
+  document.getElementById('username').value = localStorage.getItem('username') || '';
+  document.getElementById('bio').value = localStorage.getItem('bio') || '';
+  renderUserPosts();
 }
 
-let localUser = {
-  username: "",
-  displayName: "",
-  bio: "",
-  profilePic: "https://via.placeholder.com/80"
-};
-let bookmarkedIDs = JSON.parse(localStorage.getItem("bookmarkedIDs") || "[]");
-
-const mediaInput = document.getElementById("mediaInput");
-const mediaPreview = document.getElementById("mediaPreview");
+// ------------- POSTING LOGIC -------------
+const tweetButton = document.getElementById('tweetButton');
+const tweetText = document.getElementById('tweetText');
+const mediaInput = document.getElementById('mediaInput');
+const mediaPreview = document.getElementById('mediaPreview');
 let selectedMediaFile = null;
 
-if (mediaInput) {
-  mediaInput.addEventListener("change", () => {
-    mediaPreview.innerHTML = "";
-    selectedMediaFile = null;
-    if (mediaInput.files && mediaInput.files[0]) {
-      selectedMediaFile = mediaInput.files[0];
-      const file = selectedMediaFile;
-      const url = URL.createObjectURL(file);
-      if (file.type.startsWith("image/")) {
-        mediaPreview.innerHTML = `<img src="${url}" alt="preview" />`;
-      } else if (file.type.startsWith("video/")) {
-        mediaPreview.innerHTML = `<video src="${url}" controls />`;
-      }
+mediaInput.addEventListener('change', () => {
+  mediaPreview.innerHTML = '';
+  selectedMediaFile = null;
+  if (mediaInput.files && mediaInput.files[0]) {
+    selectedMediaFile = mediaInput.files[0];
+    const file = selectedMediaFile;
+    const url = URL.createObjectURL(file);
+    if (file.type.startsWith('image/')) {
+      mediaPreview.innerHTML = `<img src="${url}" alt="preview" style="max-width:140px;max-height:90px;">`;
+    } else if (file.type.startsWith('video/')) {
+      mediaPreview.innerHTML = `<video src="${url}" controls style="max-width:140px;max-height:90px;"></video>`;
     }
+  }
+});
+
+// On Post button click, add post to localStorage & re-render feed
+tweetButton.addEventListener('click', () => {
+  const text = tweetText.value.trim();
+  if (!text && !selectedMediaFile) return;
+
+  // Save media as Data URL in localStorage (for demo, not for real apps!)
+  let mediaDataUrl = null, mediaType = null;
+  if (selectedMediaFile) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      mediaDataUrl = e.target.result;
+      mediaType = selectedMediaFile.type;
+      savePost(text, mediaDataUrl, mediaType);
+      tweetText.value = '';
+      mediaPreview.innerHTML = '';
+      mediaInput.value = '';
+      selectedMediaFile = null;
+    };
+    reader.readAsDataURL(selectedMediaFile);
+    return; // Wait for async read
+  } else {
+    savePost(text, null, null);
+    tweetText.value = '';
+    mediaPreview.innerHTML = '';
+    mediaInput.value = '';
+    selectedMediaFile = null;
+  }
+});
+
+function savePost(text, mediaUrl, mediaType) {
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  posts.unshift({
+    id: Date.now(),
+    displayName: localStorage.getItem('displayName') || 'Anonymous',
+    username: localStorage.getItem('username') || '@anon',
+    profilePic: localStorage.getItem('profilePic') || 'https://placehold.co/80x80',
+    text,
+    mediaUrl,
+    mediaType,
+    created: new Date().toISOString()
   });
+  localStorage.setItem('twisterPosts', JSON.stringify(posts));
+  renderFeed();
 }
 
-// The rest of your Twister post/feed/profile logic goes here
-// (Use your existing script.js after this point!)
+// ------------- FEED LOGIC -------------
 
-// ... paste your Twister post/feed/profile code here ...
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  feed.innerHTML = posts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
+  for (const post of posts) {
+    let mediaHtml = '';
+    if (post.mediaUrl && post.mediaType) {
+      if (post.mediaType.startsWith('image/')) {
+        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
+      } else if (post.mediaType.startsWith('video/')) {
+        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
+      }
+    }
+    feed.innerHTML += `
+      <div class="tweet">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+          <img src="${post.profilePic}" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+          <strong>${post.displayName || 'Anonymous'}</strong>
+          <span style="color:#5ad;">${post.username || '@anon'}</span>
+        </div>
+        <div style="white-space:pre-line;">${post.text || ''}</div>
+        ${mediaHtml}
+        <div class="tweet-footer">
+          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ------------- PROFILE POSTS -------------
+function renderUserPosts() {
+  const profilePosts = document.getElementById('profilePosts');
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  const userName = localStorage.getItem('username') || '@anon';
+  const userPosts = posts.filter(p => p.username === userName);
+  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
+  for (const post of userPosts) {
+    let mediaHtml = '';
+    if (post.mediaUrl && post.mediaType) {
+      if (post.mediaType.startsWith('image/')) {
+        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
+      } else if (post.mediaType.startsWith('video/')) {
+        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
+      }
+    }
+    profilePosts.innerHTML += `
+      <div class="tweet">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+          <img src="${post.profilePic}" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+          <strong>${post.displayName || 'Anonymous'}</strong>
+          <span style="color:#5ad;">${post.username || '@anon'}</span>
+        </div>
+        <div style="white-space:pre-line;">${post.text || ''}</div>
+        ${mediaHtml}
+        <div class="tweet-footer">
+          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// -------- INITIAL LOAD ---------
+window.addEventListener('DOMContentLoaded', () => {
+  renderFeed();
+  renderProfile();
+});
+
