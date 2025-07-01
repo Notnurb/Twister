@@ -5,52 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- Supabase for auth & media -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Firebase SDKs for posts (optional, if you want to keep posts in Firestore) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-    const firebaseConfig = {
-      apiKey: "YOUR_SECURE_API_KEY",
-      authDomain: "twister-84a02.firebaseapp.com",
-      projectId: "twister-84a02",
-      storageBucket: "twister-84a02.appspot.com",
-      messagingSenderId: "102751535632",
-      appId: "1:102751535632:web:86be6786793ccc52640095",
-      measurementId: "G-YRXD8FE8WM"
-    };
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.db = getFirestore(window.firebaseApp);
-  </script>
   <script type="module" src="script.js"></script>
 </head>
 <body>
-  <!-- Auth Container -->
-  <div id="auth-container" class="auth-bg">
-    <div class="auth-card">
-      <h2>Welcome to Twister!</h2>
-      <div id="auth-tabs">
-        <button id="show-login" class="auth-tab active">Log In</button>
-        <button id="show-signup" class="auth-tab">Sign Up</button>
+  <!-- Username/Display Name Modal -->
+  <div id="setUserModal" class="modal-bg" style="display:none;">
+    <div class="modal-card">
+      <h2>Would you like to set a username and display name?</h2>
+      <div class="modal-btns">
+        <button id="modalYes" class="modal-btn">Yes</button>
+        <button id="modalNo" class="modal-btn alt">No</button>
       </div>
-      <form id="login-form" class="auth-form">
-        <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
-        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
-        <button type="submit">Log In</button>
-      </form>
-      <form id="signup-form" class="auth-form" style="display: none;">
-        <input type="text" id="signup-username" placeholder="Username" autocomplete="username" required>
-        <input type="email" id="signup-email" placeholder="Email" autocomplete="email" required>
-        <input type="password" id="signup-password" placeholder="Password" autocomplete="new-password" required>
-        <button type="submit">Sign Up</button>
-      </form>
-      <div id="auth-error"></div>
     </div>
   </div>
 
-  <!-- Main App Container (hidden until logged in) -->
-  <div class="layout" id="app-container" style="display:none;">
+  <div class="layout" id="app-container">
     <aside class="sidebar-left">
       <h1 class="logo">Twister</h1>
       <nav class="nav-links">
@@ -63,7 +32,6 @@
         <button class="nav-btn" data-section="profile">👤 Profile</button>
         <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
-      <button id="logout-btn" class="logout-btn">Log Out</button>
     </aside>
 
     <main class="main-feed">
