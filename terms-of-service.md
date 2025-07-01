@@ -37,6 +37,4 @@ Twister is provided “as-is.”
 We try our best, but we can’t promise Twister will always work perfectly or keep your data forever.
 
 6. Contact
-For questions or reports, email: your@email.com
-(Change to your actual contact email!)
-
+For questions or reports, email: notnurbalex@icloud.com
