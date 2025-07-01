@@ -5,34 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Supabase for media uploads -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Firebase Modular SDKs for posts - DO NOT LEAK SECRETS HERE -->
-  <script type="module">
-    // TODO: Move Firebase config to a secure location or restrict API key in Google Cloud Console!
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-    // It's best practice to NOT expose your config in public files!
-    // Store this in a secure backend, .env file, or restrict in GCP.
-    const firebaseConfig = {
-      apiKey: "YOUR_SECURE_API_KEY",
-      authDomain: "twister-84a02.firebaseapp.com",
-      projectId: "twister-84a02",
-      storageBucket: "twister-84a02.appspot.com",
-      messagingSenderId: "102751535632",
-      appId: "1:102751535632:web:86be6786793ccc52640095",
-      measurementId: "G-YRXD8FE8WM"
-    };
-
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.db = getFirestore(window.firebaseApp);
-    window.analytics = getAnalytics(window.firebaseApp);
-  </script>
-
   <script type="module" src="script.js"></script>
 </head>
 <body>
@@ -64,15 +37,44 @@
         <div id="feed" class="feed"></div>
       </section>
 
-      <section id="section-explore" class="section"></section>
+      <!-- EXPLORE PAGE -->
+      <section id="section-explore" class="section">
+        <div class="explore-header">
+          <div class="explore-left">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/group.png" class="icon" />
+            <span>Friends/Messages</span>
+          </div>
+          <h2 class="explore-title">Welcome to Twister!</h2>
+          <div class="explore-right">
+            <span id="exploreUsername">Account</span>
+            <img id="exploreProfilePic" class="profile-pic small" src="https://via.placeholder.com/40" />
+          </div>
+        </div>
+
+        <div class="explore-columns">
+          <div class="explore-column">
+            <h3>For You</h3>
+            <div class="explore-feed" id="exploreForYou"></div>
+          </div>
+          <div class="explore-column">
+            <h3>Trending</h3>
+            <div class="explore-feed" id="exploreTrending"></div>
+          </div>
+          <div class="explore-column">
+            <h3>News</h3>
+            <div class="explore-feed" id="exploreNews"></div>
+          </div>
+          <div class="explore-column">
+            <h3>Your Posts</h3>
+            <div class="explore-feed" id="exploreYourPosts"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="section-notifications" class="section"></section>
-      <section id="section-messages" class="section">
-        <div class="empty">No messages yet.</div>
-      </section>
+      <section id="section-messages" class="section"><div class="empty">No messages yet.</div></section>
       <section id="section-bookmarks" class="section"></section>
-      <section id="section-lists" class="section">
-        <div class="empty">No lists yet.</div>
-      </section>
+      <section id="section-lists" class="section"><div class="empty">No lists yet.</div></section>
 
       <section id="section-profile" class="section">
         <div class="profile-card">
@@ -87,9 +89,7 @@
         <div id="profilePosts" class="feed"></div>
       </section>
 
-      <section id="section-more" class="section">
-        <div class="empty">More tools coming soon.</div>
-      </section>
+      <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
     </main>
   </div>
 </body>
