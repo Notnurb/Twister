@@ -1,4 +1,39 @@
-// ======= PAGE NAVIGATION =======
+// ===== Data Management =====
+function getUser() {
+  // Always ensure there's a user profile in localStorage
+  let user = JSON.parse(localStorage.getItem('twisterUser'));
+  if (!user) {
+    user = {
+      username: '@anon',
+      displayName: 'Anonymous',
+      profilePic: 'https://placehold.co/74x74',
+      bio: '',
+      following: []
+    };
+    localStorage.setItem('twisterUser', JSON.stringify(user));
+  }
+  return user;
+}
+
+function setUser(user) {
+  localStorage.setItem('twisterUser', JSON.stringify(user));
+}
+
+function getAllUsers() {
+  return JSON.parse(localStorage.getItem('twisterAllUsers') || '[]');
+}
+function setAllUsers(users) {
+  localStorage.setItem('twisterAllUsers', JSON.stringify(users));
+}
+function saveOrUpdateUser(user) {
+  let all = getAllUsers();
+  const idx = all.findIndex(u => u.username === user.username);
+  if (idx >= 0) all[idx] = user;
+  else all.push(user);
+  setAllUsers(all);
+}
+
+// ===== Page Navigation =====
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -6,256 +41,235 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     const section = btn.dataset.section;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-' + section).classList.add('active');
-    if (section === "profile") renderProfile();
+    if (section === "profile") renderProfile(getUser().username);
     if (section === "home") renderFeed();
-    if (section === "lists") renderProfilePosts();
     if (section === "explore") renderExplore();
   });
 });
 
-// ======= PROFILE LOGIC =======
-document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+// ===== Profile Logic =====
+function renderProfile(username) {
+  const user = username ? getAllUsers().find(u => u.username === username) || getUser() : getUser();
+  const isSelf = user.username === getUser().username;
+  const card = document.createElement('div');
+  card.className = 'profile-card';
+  card.innerHTML = `
+    <img class="profile-pic" src="${user.profilePic || 'https://placehold.co/74x74'}" />
+    <div style="font-size:1.1rem;font-weight:700;color:#fff;margin:4px 0">${user.displayName || 'Anonymous'}</div>
+    <div style="color:#1da1f2;margin-bottom:4px;">${user.username}</div>
+    <div style="font-size:.97rem;color:#aab4c1;margin-bottom:7px">${user.bio || ''}</div>
+    ${isSelf ? `
+      <input type="text" id="editDisplayName" placeholder="Display Name" value="${user.displayName || ''}"/>
+      <input type="text" id="editUsername" placeholder="@username" value="${user.username || ''}"/>
+      <textarea id="editBio" placeholder="Bio">${user.bio || ''}</textarea>
+      <input type="file" id="editPfp" accept="image/*" />
+      <button class="tweet-btn" id="saveProfileBtn">Save Profile</button>
+    ` : `
+      <div class="profile-actions">
+        <button id="followBtn" class="${getUser().following?.includes(user.username) ? 'following' : ''}">
+          ${getUser().following?.includes(user.username) ? 'Following' : 'Follow'}
+        </button>
+      </div>
+    `}
+  `;
+  const detail = document.getElementById('profileDetail');
+  detail.innerHTML = '';
+  detail.appendChild(card);
+  document.getElementById('profilePostsTitle').innerText = isSelf ? 'Your Posts' : `${user.displayName}'s Posts`;
+  renderProfilePosts(user.username);
 
-function saveProfile() {
-  const displayName = document.getElementById('displayName').value.trim();
-  const username = document.getElementById('username').value.trim();
-  const bio = document.getElementById('bio').value.trim();
-  const profilePicFile = document.getElementById('newPfp').files[0];
-  let profilePicUrl = localStorage.getItem('profilePic') || 'https://placehold.co/80x80';
-
-  if (profilePicFile) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      localStorage.setItem('profilePic', e.target.result);
-      document.getElementById('profilePic').src = e.target.result;
+  if (isSelf) {
+    card.querySelector('#saveProfileBtn').onclick = function() {
+      let u = getUser();
+      u.displayName = card.querySelector('#editDisplayName').value.trim() || 'Anonymous';
+      u.username = card.querySelector('#editUsername').value.trim() || '@anon';
+      u.bio = card.querySelector('#editBio').value.trim();
+      if (card.querySelector('#editPfp').files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          u.profilePic = e.target.result;
+          setUser(u); saveOrUpdateUser(u);
+          renderProfile(u.username);
+        };
+        reader.readAsDataURL(card.querySelector('#editPfp').files[0]);
+        return;
+      }
+      setUser(u); saveOrUpdateUser(u); renderProfile(u.username);
     };
-    reader.readAsDataURL(profilePicFile);
-    profilePicUrl = "";
-  }
-
-  localStorage.setItem('displayName', displayName || 'Anonymous');
-  localStorage.setItem('username', username || '@anon');
-  localStorage.setItem('bio', bio);
-
-  alert('Profile saved!');
-  renderProfile();
-}
-
-function renderProfile() {
-  document.getElementById('profilePic').src = localStorage.getItem('profilePic') || 'https://placehold.co/80x80';
-  document.getElementById('displayName').value = localStorage.getItem('displayName') || '';
-  document.getElementById('username').value = localStorage.getItem('username') || '';
-  document.getElementById('bio').value = localStorage.getItem('bio') || '';
-  renderProfilePosts();
-}
-
-// ======= POSTING LOGIC (SUPABASE UPLOAD READY) =======
-const tweetButton = document.getElementById('tweetButton');
-const tweetText = document.getElementById('tweetText');
-const mediaInput = document.getElementById('mediaInput');
-const mediaPreview = document.getElementById('mediaPreview');
-let selectedMediaFile = null;
-
-mediaInput.addEventListener('change', () => {
-  mediaPreview.innerHTML = '';
-  selectedMediaFile = null;
-  if (mediaInput.files && mediaInput.files[0]) {
-    selectedMediaFile = mediaInput.files[0];
-    const file = selectedMediaFile;
-    const url = URL.createObjectURL(file);
-    if (file.type.startsWith('image/')) {
-      mediaPreview.innerHTML = `<img src="${url}" alt="preview" style="max-width:140px;max-height:90px;">`;
-    } else if (file.type.startsWith('video/')) {
-      mediaPreview.innerHTML = `<video src="${url}" controls style="max-width:140px;max-height:90px;"></video>`;
-    }
-  }
-});
-
-tweetButton.addEventListener('click', async () => {
-  const text = tweetText.value.trim();
-  if (!text && !selectedMediaFile) return;
-
-  if (selectedMediaFile) {
-    // === SUPABASE UPLOAD LOGIC ===
-    // 1. Initialize Supabase client (put your anon/public key and URL here)
-    const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-    const { createClient } = window.supabase || {};
-    if (!createClient) {
-      alert("Supabase client missing!");
-      return;
-    }
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // 2. Upload file to Supabase Storage (bucket: 'media')
-    const fileName = Date.now() + '-' + selectedMediaFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    let { data, error } = await supabase.storage.from('media').upload(fileName, selectedMediaFile, {
-      cacheControl: '3600',
-      upsert: false
-    });
-
-    if (error) {
-      alert("Upload failed: " + error.message);
-      return;
-    }
-
-    // 3. Get public URL
-    const { data: pubUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
-    let mediaUrl = pubUrlData?.publicUrl;
-
-    savePost(text, mediaUrl, selectedMediaFile.type);
-    tweetText.value = '';
-    mediaPreview.innerHTML = '';
-    mediaInput.value = '';
-    selectedMediaFile = null;
-    renderFeed();
-    return;
   } else {
-    savePost(text, null, null);
-    tweetText.value = '';
-    mediaPreview.innerHTML = '';
-    mediaInput.value = '';
-    selectedMediaFile = null;
-    renderFeed();
+    card.querySelector('#followBtn').onclick = function() {
+      let me = getUser();
+      if (!me.following) me.following = [];
+      if (me.following.includes(user.username)) {
+        me.following = me.following.filter(f => f !== user.username);
+      } else {
+        me.following.push(user.username);
+      }
+      setUser(me);
+      renderProfile(user.username);
+    };
+  }
+}
+
+// ===== Posting Logic (Videos Only) =====
+const videoInput = document.getElementById('videoInput');
+const videoPreview = document.getElementById('videoPreview');
+let selectedVideoFile = null;
+
+videoInput.addEventListener('change', () => {
+  videoPreview.innerHTML = '';
+  selectedVideoFile = null;
+  if (videoInput.files && videoInput.files[0]) {
+    selectedVideoFile = videoInput.files[0];
+    const file = selectedVideoFile;
+    const url = URL.createObjectURL(file);
+    videoPreview.innerHTML = `<video src="${url}" controls style="max-width:250px;max-height:160px;"></video>`;
   }
 });
 
-function savePost(text, mediaUrl, mediaType) {
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  posts.unshift({
-    id: Date.now(),
-    displayName: localStorage.getItem('displayName') || 'Anonymous',
-    username: localStorage.getItem('username') || '@anon',
-    profilePic: localStorage.getItem('profilePic') || 'https://placehold.co/80x80',
-    text,
-    mediaUrl,
-    mediaType,
-    created: new Date().toISOString()
-  });
-  localStorage.setItem('twisterPosts', JSON.stringify(posts));
-}
+document.getElementById('postVideoBtn').addEventListener('click', async () => {
+  if (!selectedVideoFile) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+    posts.unshift({
+      id: Date.now(),
+      username: getUser().username,
+      displayName: getUser().displayName,
+      profilePic: getUser().profilePic,
+      videoUrl: e.target.result,
+      likes: [],
+      comments: [],
+      created: new Date().toISOString(),
+    });
+    localStorage.setItem('twisterPosts', JSON.stringify(posts));
+    videoInput.value = '';
+    videoPreview.innerHTML = '';
+    selectedVideoFile = null;
+    renderFeed();
+  };
+  reader.readAsDataURL(selectedVideoFile);
+});
 
-// ======= FEED LOGIC =======
+// ===== Feed Logic with Likes, Comments, Profile Link =====
 function renderFeed() {
   const feed = document.getElementById('feed');
   const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  feed.innerHTML = posts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
+  feed.innerHTML = posts.length === 0 ? `<div class="empty">No videos yet.</div>` : '';
   for (const post of posts) {
-    let mediaHtml = '';
-    if (post.mediaUrl && post.mediaType) {
-      if (post.mediaType.startsWith('image/')) {
-        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
-      } else if (post.mediaType.startsWith('video/')) {
-        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
-      }
-    }
-    feed.innerHTML += `
-      <div class="tweet">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
-          <img src="${post.profilePic}" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
-          <strong>${post.displayName || 'Anonymous'}</strong>
-          <span style="color:#5ad;">${post.username || '@anon'}</span>
-        </div>
-        <div style="white-space:pre-line;">${post.text || ''}</div>
-        ${mediaHtml}
-        <div class="tweet-footer">
-          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
-        </div>
-      </div>
-    `;
+    feed.appendChild(createPostElement(post));
   }
 }
 
-// ======= EXPLORE LOGIC (FAKE DATA, REPLACE WITH REAL IF YOU WANT) =======
+function createPostElement(post) {
+  const div = document.createElement('div');
+  div.className = 'tweet';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
+      <img src="${post.profilePic || 'https://placehold.co/38x38'}" alt="pfp" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+      <span class="profile-link" data-username="${post.username}">${post.displayName}</span>
+      <span style="color:#5ad;">${post.username}</span>
+    </div>
+    <video src="${post.videoUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:6px;"></video>
+    <div class="tweet-footer">
+      <button class="like-btn${post.likes && post.likes.includes(getUser().username) ? ' liked' : ''}" data-id="${post.id}">❤️ ${post.likes ? post.likes.length : 0}</button>
+      <button class="comment-btn" data-id="${post.id}">💬 ${post.comments ? post.comments.length : 0}</button>
+      <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
+    </div>
+    <div class="comment-section" style="display:none"></div>
+  `;
+  // Profile click
+  div.querySelector('.profile-link').onclick = function() {
+    showProfile(post.username);
+  };
+
+  // Like button
+  div.querySelector('.like-btn').onclick = function() {
+    let posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+    let idx = posts.findIndex(p => p.id === post.id);
+    if (idx >= 0) {
+      let likes = posts[idx].likes || [];
+      const me = getUser().username;
+      if (likes.includes(me)) likes = likes.filter(u => u !== me);
+      else likes.push(me);
+      posts[idx].likes = likes;
+      localStorage.setItem('twisterPosts', JSON.stringify(posts));
+      renderFeed();
+      renderExplore();
+    }
+  };
+
+  // Comment button
+  div.querySelector('.comment-btn').onclick = function() {
+    const cmtSec = div.querySelector('.comment-section');
+    cmtSec.style.display = cmtSec.style.display === 'block' ? 'none' : 'block';
+    renderComments(post.id, cmtSec);
+  };
+  return div;
+}
+
+function renderComments(postId, cmtSec) {
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  const idx = posts.findIndex(p => p.id === postId);
+  if (idx < 0) return;
+  cmtSec.innerHTML = '';
+  (posts[idx].comments || []).forEach(cmt => {
+    cmtSec.innerHTML += `<div class="comment"><b>${cmt.user}</b>: ${cmt.text}</div>`;
+  });
+  cmtSec.innerHTML += `
+    <div class="add-comment">
+      <input type="text" placeholder="Add a comment..." />
+      <button>Post</button>
+    </div>
+  `;
+  cmtSec.querySelector('button').onclick = function() {
+    const input = cmtSec.querySelector('input');
+    if (input.value.trim() === '') return;
+    posts[idx].comments = posts[idx].comments || [];
+    posts[idx].comments.push({ user: getUser().username, text: input.value.trim() });
+    localStorage.setItem('twisterPosts', JSON.stringify(posts));
+    renderComments(postId, cmtSec);
+    renderFeed();
+    renderExplore();
+  };
+}
+
+// ===== Profile Posts =====
+function renderProfilePosts(username) {
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  const userPosts = posts.filter(p => p.username === username);
+  const profilePosts = document.getElementById('profilePosts');
+  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No videos yet.</div>` : '';
+  userPosts.forEach(post => profilePosts.appendChild(createPostElement(post)));
+}
+
+// ===== Explore Logic (Trending by likes+comments) =====
 function renderExplore() {
   const exploreFeed = document.getElementById('exploreFeed');
-  exploreFeed.innerHTML = '';
-  const trending = [
-    {
-      displayName: "Celeste",
-      username: "@celeste",
-      text: "Just swam 1 mile in 22 minutes 😤🏊‍♂️",
-      mediaUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-      mediaType: "image/jpeg",
-      created: new Date().toISOString()
-    },
-    {
-      displayName: "Pingu",
-      username: "@pingu",
-      text: "NOOT NOOT 🚀",
-      mediaUrl: "",
-      mediaType: "",
-      created: new Date().toISOString()
-    },
-    {
-      displayName: "Gabe",
-      username: "@gaben",
-      text: "Check out my new vid 🔥",
-      mediaUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      mediaType: "video/mp4",
-      created: new Date().toISOString()
-    },
-  ];
-  for (const post of trending) {
-    let mediaHtml = '';
-    if (post.mediaUrl && post.mediaType) {
-      if (post.mediaType.startsWith('image/')) {
-        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
-      } else if (post.mediaType.startsWith('video/')) {
-        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
-      }
-    }
-    exploreFeed.innerHTML += `
-      <div class="explore-post">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
-          <img src="https://placehold.co/38x38" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
-          <strong>${post.displayName}</strong>
-          <span style="color:#5ad;">${post.username}</span>
-        </div>
-        <div style="white-space:pre-line;">${post.text || ''}</div>
-        ${mediaHtml}
-        <div class="explore-footer">
-          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
-        </div>
-      </div>
-    `;
-  }
+  let posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  posts = posts.slice().sort((a, b) =>
+    ((b.likes ? b.likes.length : 0) + (b.comments ? b.comments.length : 0)) -
+    ((a.likes ? a.likes.length : 0) + (a.comments ? a.comments.length : 0))
+  ).slice(0, 10); // Top 10 trending
+  exploreFeed.innerHTML = posts.length === 0 ? `<div class="empty">Nothing trending yet.</div>` : '';
+  posts.forEach(post => exploreFeed.appendChild(createPostElement(post)));
 }
 
-function renderProfilePosts() {
-  const profilePosts = document.getElementById('profilePosts');
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  const userName = localStorage.getItem('username') || '@anon';
-  const userPosts = posts.filter(p => p.username === userName);
-  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
-  for (const post of userPosts) {
-    let mediaHtml = '';
-    if (post.mediaUrl && post.mediaType) {
-      if (post.mediaType.startsWith('image/')) {
-        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
-      } else if (post.mediaType.startsWith('video/')) {
-        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
-      }
-    }
-    profilePosts.innerHTML += `
-      <div class="tweet">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
-          <img src="${post.profilePic}" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
-          <strong>${post.displayName || 'Anonymous'}</strong>
-          <span style="color:#5ad;">${post.username || '@anon'}</span>
-        </div>
-        <div style="white-space:pre-line;">${post.text || ''}</div>
-        ${mediaHtml}
-        <div class="tweet-footer">
-          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
-        </div>
-      </div>
-    `;
-  }
+// ===== View Any User Profile =====
+function showProfile(username) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-profile').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  renderProfile(username);
 }
 
+// ===== Initial User/Feed Setup =====
 window.addEventListener('DOMContentLoaded', () => {
+  let me = getUser(); // always initialize
+  // Store current user in allUsers if not present
+  let all = getAllUsers();
+  if (!all.some(u => u.username === me.username)) all.push(me), setAllUsers(all);
   renderFeed();
-  renderProfile();
+  renderProfile(me.username);
   renderExplore();
 });
