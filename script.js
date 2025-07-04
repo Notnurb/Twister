@@ -4,7 +4,7 @@ function getUser() {
   if (!user) {
     user = {
       username: '@anon',
-      displayName: 'Anonymous',
+      displayName: 'I can change my name in the profile tab!',
       profilePic: 'https://placehold.co/74x74',
       bio: '',
       following: []
@@ -33,17 +33,50 @@ function saveOrUpdateUser(user) {
 }
 
 // ===== Page Navigation =====
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const section = btn.dataset.section;
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById('section-' + section).classList.add('active');
-    if (section === "profile") renderProfile(getUser().username);
-    if (section === "home") renderFeed();
-    if (section === "explore") renderExplore();
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const section = btn.dataset.section;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + section).classList.add('active');
+      if (section === "profile") renderProfile(getUser().username);
+      if (section === "home") renderFeed();
+      if (section === "explore") renderExplore();
+    });
   });
+
+  // ===== Posting Logic (Text Only) =====
+  const tweetButton = document.getElementById('tweetButton');
+  const tweetText = document.getElementById('tweetText');
+  tweetButton.addEventListener('click', () => {
+    const text = tweetText.value.trim();
+    if (!text) return;
+    const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+    posts.unshift({
+      id: Date.now(),
+      username: getUser().username,
+      displayName: getUser().displayName,
+      profilePic: getUser().profilePic,
+      text,
+      likes: [],
+      comments: [],
+      created: new Date().toISOString(),
+    });
+    localStorage.setItem('twisterPosts', JSON.stringify(posts));
+    tweetText.value = '';
+    renderFeed();
+    renderExplore();
+  });
+
+  // ===== Initial User/Feed Setup =====
+  let me = getUser();
+  let all = getAllUsers();
+  if (!all.some(u => u.username === me.username)) all.push(me), setAllUsers(all);
+  renderFeed();
+  renderProfile(me.username);
+  renderExplore();
 });
 
 // ===== Profile Logic =====
@@ -109,30 +142,6 @@ function renderProfile(username) {
     };
   }
 }
-
-// ===== Posting Logic (Text Only) =====
-const tweetButton = document.getElementById('tweetButton');
-const tweetText = document.getElementById('tweetText');
-
-tweetButton.addEventListener('click', () => {
-  const text = tweetText.value.trim();
-  if (!text) return;
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  posts.unshift({
-    id: Date.now(),
-    username: getUser().username,
-    displayName: getUser().displayName,
-    profilePic: getUser().profilePic,
-    text,
-    likes: [],
-    comments: [],
-    created: new Date().toISOString(),
-  });
-  localStorage.setItem('twisterPosts', JSON.stringify(posts));
-  tweetText.value = '';
-  renderFeed();
-  renderExplore();
-});
 
 // ===== Feed Logic with Likes, Comments, Profile Link =====
 function renderFeed() {
@@ -245,13 +254,3 @@ function showProfile(username) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   renderProfile(username);
 }
-
-// ===== Initial User/Feed Setup =====
-window.addEventListener('DOMContentLoaded', () => {
-  let me = getUser();
-  let all = getAllUsers();
-  if (!all.some(u => u.username === me.username)) all.push(me), setAllUsers(all);
-  renderFeed();
-  renderProfile(me.username);
-  renderExplore();
-});
