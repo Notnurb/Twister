@@ -1,6 +1,5 @@
 // ===== Data Management =====
 function getUser() {
-  // Always ensure there's a user profile in localStorage
   let user = JSON.parse(localStorage.getItem('twisterUser'));
   if (!user) {
     user = {
@@ -111,51 +110,35 @@ function renderProfile(username) {
   }
 }
 
-// ===== Posting Logic (Videos Only) =====
-const videoInput = document.getElementById('videoInput');
-const videoPreview = document.getElementById('videoPreview');
-let selectedVideoFile = null;
+// ===== Posting Logic (Text Only) =====
+const tweetButton = document.getElementById('tweetButton');
+const tweetText = document.getElementById('tweetText');
 
-videoInput.addEventListener('change', () => {
-  videoPreview.innerHTML = '';
-  selectedVideoFile = null;
-  if (videoInput.files && videoInput.files[0]) {
-    selectedVideoFile = videoInput.files[0];
-    const file = selectedVideoFile;
-    const url = URL.createObjectURL(file);
-    videoPreview.innerHTML = `<video src="${url}" controls style="max-width:250px;max-height:160px;"></video>`;
-  }
-});
-
-document.getElementById('postVideoBtn').addEventListener('click', async () => {
-  if (!selectedVideoFile) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-    posts.unshift({
-      id: Date.now(),
-      username: getUser().username,
-      displayName: getUser().displayName,
-      profilePic: getUser().profilePic,
-      videoUrl: e.target.result,
-      likes: [],
-      comments: [],
-      created: new Date().toISOString(),
-    });
-    localStorage.setItem('twisterPosts', JSON.stringify(posts));
-    videoInput.value = '';
-    videoPreview.innerHTML = '';
-    selectedVideoFile = null;
-    renderFeed();
-  };
-  reader.readAsDataURL(selectedVideoFile);
+tweetButton.addEventListener('click', () => {
+  const text = tweetText.value.trim();
+  if (!text) return;
+  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
+  posts.unshift({
+    id: Date.now(),
+    username: getUser().username,
+    displayName: getUser().displayName,
+    profilePic: getUser().profilePic,
+    text,
+    likes: [],
+    comments: [],
+    created: new Date().toISOString(),
+  });
+  localStorage.setItem('twisterPosts', JSON.stringify(posts));
+  tweetText.value = '';
+  renderFeed();
+  renderExplore();
 });
 
 // ===== Feed Logic with Likes, Comments, Profile Link =====
 function renderFeed() {
   const feed = document.getElementById('feed');
   const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  feed.innerHTML = posts.length === 0 ? `<div class="empty">No videos yet.</div>` : '';
+  feed.innerHTML = posts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
   for (const post of posts) {
     feed.appendChild(createPostElement(post));
   }
@@ -170,7 +153,7 @@ function createPostElement(post) {
       <span class="profile-link" data-username="${post.username}">${post.displayName}</span>
       <span style="color:#5ad;">${post.username}</span>
     </div>
-    <video src="${post.videoUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:6px;"></video>
+    <div style="white-space:pre-line;margin-bottom:7px;">${post.text || ''}</div>
     <div class="tweet-footer">
       <button class="like-btn${post.likes && post.likes.includes(getUser().username) ? ' liked' : ''}" data-id="${post.id}">❤️ ${post.likes ? post.likes.length : 0}</button>
       <button class="comment-btn" data-id="${post.id}">💬 ${post.comments ? post.comments.length : 0}</button>
@@ -239,7 +222,7 @@ function renderProfilePosts(username) {
   const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
   const userPosts = posts.filter(p => p.username === username);
   const profilePosts = document.getElementById('profilePosts');
-  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No videos yet.</div>` : '';
+  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
   userPosts.forEach(post => profilePosts.appendChild(createPostElement(post)));
 }
 
@@ -265,8 +248,7 @@ function showProfile(username) {
 
 // ===== Initial User/Feed Setup =====
 window.addEventListener('DOMContentLoaded', () => {
-  let me = getUser(); // always initialize
-  // Store current user in allUsers if not present
+  let me = getUser();
   let all = getAllUsers();
   if (!all.some(u => u.username === me.username)) all.push(me), setAllUsers(all);
   renderFeed();
