@@ -1,6 +1,4 @@
-// ========== BASIC TWISTER SINGLE-PAGE LOGIC (NO AUTH, LOCAL STORAGE) ==========
-
-// Navigation: Switch sections on sidebar click
+// ======= PAGE NAVIGATION =======
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -10,11 +8,15 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     document.getElementById('section-' + section).classList.add('active');
     if (section === "profile") renderProfile();
     if (section === "home") renderFeed();
+    if (section === "lists") renderProfilePosts();
+    if (section === "explore") renderExplore();
   });
 });
 
-// ------------- PROFILE LOGIC -------------
-window.saveProfile = function saveProfile() {
+// ======= PROFILE LOGIC =======
+document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+
+function saveProfile() {
   const displayName = document.getElementById('displayName').value.trim();
   const username = document.getElementById('username').value.trim();
   const bio = document.getElementById('bio').value.trim();
@@ -28,7 +30,7 @@ window.saveProfile = function saveProfile() {
       document.getElementById('profilePic').src = e.target.result;
     };
     reader.readAsDataURL(profilePicFile);
-    profilePicUrl = ""; // Will be set when loaded
+    profilePicUrl = "";
   }
 
   localStorage.setItem('displayName', displayName || 'Anonymous');
@@ -39,16 +41,15 @@ window.saveProfile = function saveProfile() {
   renderProfile();
 }
 
-// Render Profile Page Data
 function renderProfile() {
   document.getElementById('profilePic').src = localStorage.getItem('profilePic') || 'https://placehold.co/80x80';
   document.getElementById('displayName').value = localStorage.getItem('displayName') || '';
   document.getElementById('username').value = localStorage.getItem('username') || '';
   document.getElementById('bio').value = localStorage.getItem('bio') || '';
-  renderUserPosts();
+  renderProfilePosts();
 }
 
-// ------------- POSTING LOGIC -------------
+// ======= POSTING LOGIC (SUPABASE UPLOAD READY) =======
 const tweetButton = document.getElementById('tweetButton');
 const tweetText = document.getElementById('tweetText');
 const mediaInput = document.getElementById('mediaInput');
@@ -70,32 +71,52 @@ mediaInput.addEventListener('change', () => {
   }
 });
 
-// On Post button click, add post to localStorage & re-render feed
-tweetButton.addEventListener('click', () => {
+tweetButton.addEventListener('click', async () => {
   const text = tweetText.value.trim();
   if (!text && !selectedMediaFile) return;
 
-  // Save media as Data URL in localStorage (for demo, not for real apps!)
-  let mediaDataUrl = null, mediaType = null;
   if (selectedMediaFile) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      mediaDataUrl = e.target.result;
-      mediaType = selectedMediaFile.type;
-      savePost(text, mediaDataUrl, mediaType);
-      tweetText.value = '';
-      mediaPreview.innerHTML = '';
-      mediaInput.value = '';
-      selectedMediaFile = null;
-    };
-    reader.readAsDataURL(selectedMediaFile);
-    return; // Wait for async read
+    // === SUPABASE UPLOAD LOGIC ===
+    // 1. Initialize Supabase client (put your anon/public key and URL here)
+    const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+    const { createClient } = window.supabase || {};
+    if (!createClient) {
+      alert("Supabase client missing!");
+      return;
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // 2. Upload file to Supabase Storage (bucket: 'media')
+    const fileName = Date.now() + '-' + selectedMediaFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    let { data, error } = await supabase.storage.from('media').upload(fileName, selectedMediaFile, {
+      cacheControl: '3600',
+      upsert: false
+    });
+
+    if (error) {
+      alert("Upload failed: " + error.message);
+      return;
+    }
+
+    // 3. Get public URL
+    const { data: pubUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+    let mediaUrl = pubUrlData?.publicUrl;
+
+    savePost(text, mediaUrl, selectedMediaFile.type);
+    tweetText.value = '';
+    mediaPreview.innerHTML = '';
+    mediaInput.value = '';
+    selectedMediaFile = null;
+    renderFeed();
+    return;
   } else {
     savePost(text, null, null);
     tweetText.value = '';
     mediaPreview.innerHTML = '';
     mediaInput.value = '';
     selectedMediaFile = null;
+    renderFeed();
   }
 });
 
@@ -112,11 +133,9 @@ function savePost(text, mediaUrl, mediaType) {
     created: new Date().toISOString()
   });
   localStorage.setItem('twisterPosts', JSON.stringify(posts));
-  renderFeed();
 }
 
-// ------------- FEED LOGIC -------------
-
+// ======= FEED LOGIC =======
 function renderFeed() {
   const feed = document.getElementById('feed');
   const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
@@ -147,8 +166,63 @@ function renderFeed() {
   }
 }
 
-// ------------- PROFILE POSTS -------------
-function renderUserPosts() {
+// ======= EXPLORE LOGIC (FAKE DATA, REPLACE WITH REAL IF YOU WANT) =======
+function renderExplore() {
+  const exploreFeed = document.getElementById('exploreFeed');
+  exploreFeed.innerHTML = '';
+  const trending = [
+    {
+      displayName: "Celeste",
+      username: "@celeste",
+      text: "Just swam 1 mile in 22 minutes 😤🏊‍♂️",
+      mediaUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+      mediaType: "image/jpeg",
+      created: new Date().toISOString()
+    },
+    {
+      displayName: "Pingu",
+      username: "@pingu",
+      text: "NOOT NOOT 🚀",
+      mediaUrl: "",
+      mediaType: "",
+      created: new Date().toISOString()
+    },
+    {
+      displayName: "Gabe",
+      username: "@gaben",
+      text: "Check out my new vid 🔥",
+      mediaUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+      mediaType: "video/mp4",
+      created: new Date().toISOString()
+    },
+  ];
+  for (const post of trending) {
+    let mediaHtml = '';
+    if (post.mediaUrl && post.mediaType) {
+      if (post.mediaType.startsWith('image/')) {
+        mediaHtml = `<img src="${post.mediaUrl}" alt="media" style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;">`;
+      } else if (post.mediaType.startsWith('video/')) {
+        mediaHtml = `<video src="${post.mediaUrl}" controls style="max-width:320px;max-height:180px;border-radius:9px;margin-top:9px;"></video>`;
+      }
+    }
+    exploreFeed.innerHTML += `
+      <div class="explore-post">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+          <img src="https://placehold.co/38x38" alt="pfp" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+          <strong>${post.displayName}</strong>
+          <span style="color:#5ad;">${post.username}</span>
+        </div>
+        <div style="white-space:pre-line;">${post.text || ''}</div>
+        ${mediaHtml}
+        <div class="explore-footer">
+          <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderProfilePosts() {
   const profilePosts = document.getElementById('profilePosts');
   const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
   const userName = localStorage.getItem('username') || '@anon';
@@ -180,8 +254,8 @@ function renderUserPosts() {
   }
 }
 
-// -------- INITIAL LOAD ---------
 window.addEventListener('DOMContentLoaded', () => {
   renderFeed();
   renderProfile();
+  renderExplore();
 });
