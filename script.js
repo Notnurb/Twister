@@ -7,7 +7,7 @@ function getUser() {
   if (!user) {
     user = {
       username: '@anon' + Math.floor(Math.random() * 10000),
-      displayName: 'Anonymous',
+      displayName: 'I can Change my name in the profile tab! 💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀',
       profilePic: 'https://placehold.co/74x74',
       bio: '',
       following: []
