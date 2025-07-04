@@ -13,37 +13,37 @@ html, body {
   background: #000;
 }
 .sidebar-left {
-  width: 240px;
+  width: 220px;
   background: #111;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 34px 16px 22px 18px;
+  padding: 30px 10px 15px 16px;
   min-height: 100vh;
   border-right: 2px solid #181818;
 }
 .logo {
   font-family: 'Ubuntu', system-ui, sans-serif;
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   color: #1da1f2;
   font-weight: 700;
-  margin-bottom: 30px;
-  letter-spacing: 1.3px;
+  margin-bottom: 25px;
+  letter-spacing: 1.2px;
 }
 .nav-links {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .nav-btn {
   width: 100%;
-  padding: 12px 0;
-  border-radius: 13px;
+  padding: 10px 0;
+  border-radius: 11px;
   background: none;
   color: #e6e6ea;
   border: none;
-  font-size: 1.13rem;
+  font-size: 1.09rem;
   font-weight: 500;
   text-align: left;
   transition: background 0.13s, color 0.13s;
@@ -58,7 +58,7 @@ html, body {
   flex: 1 1 auto;
   min-width: 0;
   background: #000;
-  padding: 38px 0 0 0;
+  padding: 34px 0 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,8 +68,7 @@ html, body {
   max-width: 600px;
   display: none;
   flex-direction: column;
-  margin-bottom: 34px;
-  background: none;
+  margin-bottom: 30px;
 }
 .section.active {
   display: flex;
@@ -77,44 +76,26 @@ html, body {
 .empty {
   color: #8fa1b2;
   text-align: center;
-  margin: 47px 0;
-  font-size: 1.18rem;
+  margin: 38px 0;
+  font-size: 1.15rem;
 }
 .post-input {
   background: #111;
   border-radius: 14px;
-  margin-bottom: 26px;
-  padding: 22px 24px 18px 24px;
+  margin-bottom: 22px;
+  padding: 16px 18px 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
-#tweetText {
-  border: none;
-  resize: vertical;
-  min-height: 48px;
-  font-size: 1.13rem;
-  border-radius: 13px;
-  padding: 14px;
-  background: #222;
-  color: #fff;
-  font-family: inherit;
-  outline: none;
-  margin-bottom: 2px;
-}
-.media-upload {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-#mediaInput {
+#videoInput {
   font-size: 1rem;
   color: #bbb;
 }
-#mediaPreview img, #mediaPreview video {
+#videoPreview video {
   margin-top: 5px;
-  max-width: 164px;
-  max-height: 102px;
+  max-width: 250px;
+  max-height: 160px;
   border-radius: 10px;
   display: block;
 }
@@ -123,9 +104,9 @@ html, body {
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-size: 1.13rem;
+  font-size: 1.11rem;
   font-weight: bold;
-  padding: 12px 0;
+  padding: 10px 0;
   margin-top: 4px;
   transition: background 0.13s;
   cursor: pointer;
@@ -134,93 +115,157 @@ html, body {
 .tweet-btn:hover {
   background: #1976d2;
 }
-.feed, .explore-feed {
+.feed {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 19px;
+  gap: 16px;
 }
-.tweet, .explore-post {
+.tweet {
   background: #111;
   border-radius: 14px;
-  padding: 16px 20px;
-  margin-bottom: 0;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  word-break: break-word;
-  font-size: 1.11rem;
+  font-size: 1.07rem;
 }
-.tweet strong, .explore-post strong {
+.tweet strong, .tweet .profile-link {
   color: #fff;
   font-weight: 700;
-  margin-right: 8px;
+  margin-right: 7px;
+  cursor: pointer;
+  text-decoration: underline dotted #1976d2;
 }
-.tweet-footer, .explore-footer {
-  margin-top: 12px;
+.tweet .profile-link:hover {
+  color: #1da1f2;
+}
+.tweet-footer {
+  margin-top: 9px;
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
+  font-size: 0.97rem;
 }
-.tweet-footer button, .explore-footer button {
+.tweet-footer button {
   background: none;
   border: none;
   color: #1da1f2;
   font-size: 1rem;
   cursor: pointer;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 7px;
   transition: background 0.12s, color 0.13s;
 }
-.tweet-footer button:hover, .explore-footer button:hover {
+.tweet-footer button.liked {
+  color: #ff5b5b;
+  font-weight: bold;
+}
+.tweet-footer button:hover {
   background: #1da1f2;
   color: #fff;
 }
-.comment, .reply {
+.comment-section {
+  margin-top: 12px;
+  padding-left: 8px;
+  border-left: 2px solid #1da1f2;
+  background: #191b1e;
+  border-radius: 8px;
+}
+.comment {
   background: #222;
   color: #a7b3c6;
-  padding: 6px 13px;
-  margin-top: 10px;
+  padding: 6px 12px;
+  margin-top: 6px;
   border-radius: 8px;
   font-size: 0.97rem;
+  word-break: break-word;
+}
+.add-comment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.add-comment input {
+  flex: 1;
+  padding: 7px;
+  border-radius: 7px;
+  border: none;
+  background: #232f3e;
+  color: #fff;
+}
+.add-comment button {
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.97rem;
+  font-weight: 500;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+.add-comment button:hover {
+  background: #1976d2;
 }
 .profile-card {
   background: #111;
   border-radius: 14px;
-  padding: 25px 22px 21px 22px;
+  padding: 17px 18px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 32px;
 }
 .profile-pic {
-  width: 84px;
-  height: 84px;
+  width: 74px;
+  height: 74px;
   object-fit: cover;
   border-radius: 50%;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   border: 2px solid #1da1f2;
   background: #222;
 }
 .profile-card input, .profile-card textarea {
   margin: 4px 0;
   width: 100%;
-  max-width: 295px;
-  padding: 11px;
-  border-radius: 9px;
+  max-width: 260px;
+  padding: 9px;
+  border-radius: 7px;
   border: 1.2px solid #222;
   background: #222;
   color: #fff;
   font-size: 1rem;
   outline: none;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .profile-card input:focus, .profile-card textarea:focus {
   border: 1.5px solid #1da1f2;
   background: #1a2330;
 }
 .profile-card textarea {
-  min-height: 62px;
+  min-height: 44px;
   resize: vertical;
+}
+.profile-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+.profile-actions button {
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.97rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+.profile-actions button.following {
+  background: #aaa;
+  color: #222;
 }
 @media (max-width: 900px) {
   .layout { flex-direction: column; }
@@ -232,15 +277,15 @@ html, body {
     border-bottom: 2px solid #181818;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 10px;
+    padding: 10px 2vw;
   }
-  .main-feed { padding: 23px 0 0 0; min-height: 80vh; }
+  .main-feed { padding: 15px 0 0 0; min-height: 80vh; }
 }
 @media (max-width: 700px) {
   .sidebar-left { font-size: 0.99rem; padding: 10px 4px; width: 100vw; }
-  .main-feed { padding-top: 8px; max-width: 100vw; }
+  .main-feed { padding-top: 4px; max-width: 100vw; }
   .section { max-width: 100vw; padding: 0 2vw; }
-  .profile-card input, .profile-card textarea { max-width: 96vw; }
+  .profile-card input, .profile-card textarea { max-width: 93vw; }
 }
 @media (max-width: 480px) {
   .sidebar-left { font-size: 0.94rem; padding: 6px 1vw; }
