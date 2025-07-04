@@ -88,16 +88,18 @@ html, body {
   flex-direction: column;
   gap: 10px;
 }
-#videoInput {
-  font-size: 1rem;
-  color: #bbb;
-}
-#videoPreview video {
-  margin-top: 5px;
-  max-width: 250px;
-  max-height: 160px;
-  border-radius: 10px;
-  display: block;
+#tweetText {
+  border: none;
+  resize: vertical;
+  min-height: 48px;
+  font-size: 1.13rem;
+  border-radius: 11px;
+  padding: 13px;
+  background: #222;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 2px;
 }
 .tweet-btn {
   background: #1da1f2;
