@@ -1,173 +1,52 @@
-/* Import Ubuntu font (optional, recommended) */
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap');
-
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
-  background: #101214;
+  height: 100%;
   font-family: 'Ubuntu', system-ui, sans-serif;
+  background: #000;
   color: #e6e6ea;
 }
-
-body {
-  min-height: 100vh;
-  background: #101214;
-}
-
-/* === AUTH === */
-
-.auth-bg {
-  min-height: 100vh;
-  background: #14171a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-card {
-  background: #181c23;
-  padding: 40px 30px 30px 30px;
-  border-radius: 18px;
-  box-shadow: 0 4px 32px #0005;
-  max-width: 370px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.auth-card h2 {
-  margin-bottom: 22px;
-  font-size: 2rem;
-  color: #fff;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-#auth-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  width: 100%;
-  justify-content: center;
-}
-
-.auth-tab {
-  background: none;
-  color: #bbb;
-  border: none;
-  padding: 7px 28px;
-  border-radius: 9px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.17s, color 0.17s;
-}
-
-.auth-tab.active {
-  background: #1da1f2;
-  color: #fff;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  margin-bottom: 0;
-  width: 100%;
-}
-
-.auth-form input {
-  padding: 12px;
-  border-radius: 9px;
-  border: 1px solid #222c;
-  background: #222;
-  color: #fff;
-  font-size: 1rem;
-  transition: border 0.17s;
-  outline: none;
-}
-.auth-form input:focus {
-  border: 1.5px solid #1da1f2;
-  background: #1a2330;
-}
-.auth-form button {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 9px;
-  background: #1da1f2;
-  color: #fff;
-  border: none;
-  font-weight: bold;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 1.5px 6px #0002;
-  transition: background 0.15s, box-shadow 0.15s;
-}
-.auth-form button:hover {
-  background: #1768b7;
-  box-shadow: 0 4px 16px #0087ff44;
-}
-#auth-error {
-  color: #ff5757;
-  margin-top: 13px;
-  min-height: 22px;
-  text-align: center;
-  font-weight: 500;
-}
-
-/* === LAYOUT === */
-
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #101214;
-  margin: 0;
+  background: #000;
 }
-
-/* SIDEBAR */
-
 .sidebar-left {
-  width: 230px;
-  background: #181c23;
+  width: 240px;
+  background: #111;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 32px 15px 20px 15px;
+  padding: 34px 16px 22px 18px;
   min-height: 100vh;
-  border-right: 2px solid #232b36;
+  border-right: 2px solid #181818;
 }
-
 .logo {
   font-family: 'Ubuntu', system-ui, sans-serif;
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   color: #1da1f2;
   font-weight: 700;
-  margin-bottom: 28px;
-  letter-spacing: 1.2px;
-  text-shadow: 0 2px 10px #1da1f266;
+  margin-bottom: 30px;
+  letter-spacing: 1.3px;
 }
-
 .nav-links {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
-
 .nav-btn {
   width: 100%;
   padding: 12px 0;
-  border-radius: 12px;
+  border-radius: 13px;
   background: none;
   color: #e6e6ea;
   border: none;
-  font-size: 1.11rem;
+  font-size: 1.13rem;
   font-weight: 500;
   text-align: left;
-  transition: background 0.15s, color 0.13s;
+  transition: background 0.13s, color 0.13s;
   cursor: pointer;
   outline: none;
 }
@@ -175,268 +54,194 @@ body {
   background: #1da1f2;
   color: #fff;
 }
-
-.logout-btn {
-  margin-top: 30px;
-  background: #222;
-  color: #fff;
-  padding: 11px 0;
-  border: none;
-  border-radius: 13px;
-  width: 90%;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.logout-btn:hover {
-  background: #e53935;
-  color: #fff;
-}
-
-/* MAIN APP */
-
 .main-feed {
   flex: 1 1 auto;
   min-width: 0;
-  background: #101214;
-  padding: 36px 0 0 0;
+  background: #000;
+  padding: 38px 0 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 .section {
   width: 100%;
   max-width: 600px;
   display: none;
   flex-direction: column;
-  margin-bottom: 32px;
+  margin-bottom: 34px;
+  background: none;
 }
 .section.active {
   display: flex;
 }
-
 .empty {
   color: #8fa1b2;
   text-align: center;
-  margin: 45px 0;
-  font-size: 1.16rem;
+  margin: 47px 0;
+  font-size: 1.18rem;
 }
-
-/* POST INPUT */
-
 .post-input {
-  background: #181c23;
-  border-radius: 13px;
-  box-shadow: 0 4px 12px #0002;
-  margin-bottom: 25px;
+  background: #111;
+  border-radius: 14px;
+  margin-bottom: 26px;
   padding: 22px 24px 18px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-
 #tweetText {
   border: none;
   resize: vertical;
   min-height: 48px;
-  font-size: 1.09rem;
-  border-radius: 12px;
+  font-size: 1.13rem;
+  border-radius: 13px;
   padding: 14px;
-  background: #232a35;
+  background: #222;
   color: #fff;
   font-family: inherit;
   outline: none;
   margin-bottom: 2px;
 }
-
 .media-upload {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
 }
 #mediaInput {
   font-size: 1rem;
   color: #bbb;
 }
 #mediaPreview img, #mediaPreview video {
-  margin-top: 4px;
-  max-width: 160px;
-  max-height: 100px;
-  border-radius: 9px;
+  margin-top: 5px;
+  max-width: 164px;
+  max-height: 102px;
+  border-radius: 10px;
   display: block;
-  box-shadow: 0 2px 8px #0003;
 }
-
 .tweet-btn {
   background: #1da1f2;
   color: #fff;
   border: none;
-  border-radius: 9px;
-  font-size: 1.09rem;
+  border-radius: 10px;
+  font-size: 1.13rem;
   font-weight: bold;
-  padding: 11px 0;
-  margin-top: 3px;
-  transition: background 0.17s, box-shadow 0.12s;
-  box-shadow: 0 1.5px 6px #1da1f233;
+  padding: 12px 0;
+  margin-top: 4px;
+  transition: background 0.13s;
   cursor: pointer;
   outline: none;
 }
 .tweet-btn:hover {
   background: #1976d2;
 }
-
-/* FEED */
-
-.feed {
+.feed, .explore-feed {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 19px;
 }
-
-.tweet {
-  background: #181c23;
-  border-radius: 13px;
-  box-shadow: 0 4px 12px #0001;
+.tweet, .explore-post {
+  background: #111;
+  border-radius: 14px;
   padding: 16px 20px;
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
   word-break: break-word;
-  font-size: 1.1rem;
+  font-size: 1.11rem;
 }
-
-.tweet strong {
+.tweet strong, .explore-post strong {
   color: #fff;
   font-weight: 700;
-  margin-right: 7px;
+  margin-right: 8px;
 }
-.tweet-footer {
+.tweet-footer, .explore-footer {
   margin-top: 12px;
   display: flex;
   gap: 20px;
   align-items: center;
 }
-.tweet-footer button {
+.tweet-footer button, .explore-footer button {
   background: none;
   border: none;
   color: #1da1f2;
   font-size: 1rem;
   cursor: pointer;
-  padding: 3px 7px;
+  padding: 3px 8px;
   border-radius: 7px;
-  transition: background 0.15s, color 0.13s;
+  transition: background 0.12s, color 0.13s;
 }
-.tweet-footer button:hover {
+.tweet-footer button:hover, .explore-footer button:hover {
   background: #1da1f2;
   color: #fff;
 }
-
 .comment, .reply {
-  background: #222b33;
+  background: #222;
   color: #a7b3c6;
   padding: 6px 13px;
-  margin-top: 9px;
-  border-radius: 7px;
-  font-size: 0.96rem;
-  box-shadow: 0 2px 7px #0002;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 0.97rem;
 }
-
-/* PROFILE */
-
 .profile-card {
-  background: #181c23;
-  border-radius: 13px;
-  padding: 24px 22px 20px 22px;
-  box-shadow: 0 4px 16px #0002;
+  background: #111;
+  border-radius: 14px;
+  padding: 25px 22px 21px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
 }
-
 .profile-pic {
-  width: 82px;
-  height: 82px;
+  width: 84px;
+  height: 84px;
   object-fit: cover;
   border-radius: 50%;
-  margin-bottom: 13px;
+  margin-bottom: 14px;
   border: 2px solid #1da1f2;
   background: #222;
 }
-
 .profile-card input, .profile-card textarea {
   margin: 4px 0;
   width: 100%;
-  max-width: 290px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1.2px solid #222b33;
-  background: #232a35;
+  max-width: 295px;
+  padding: 11px;
+  border-radius: 9px;
+  border: 1.2px solid #222;
+  background: #222;
   color: #fff;
   font-size: 1rem;
   outline: none;
-  margin-bottom: 9px;
+  margin-bottom: 10px;
 }
 .profile-card input:focus, .profile-card textarea:focus {
   border: 1.5px solid #1da1f2;
   background: #1a2330;
 }
-
 .profile-card textarea {
-  min-height: 60px;
+  min-height: 62px;
   resize: vertical;
 }
-
-/* RESPONSIVE */
-
 @media (max-width: 900px) {
-  .layout {
-    flex-direction: column;
-  }
+  .layout { flex-direction: column; }
   .sidebar-left {
     flex-direction: row;
     min-height: unset;
     width: 100%;
     border-right: none;
-    border-bottom: 2px solid #232b36;
+    border-bottom: 2px solid #181818;
     align-items: center;
     justify-content: space-between;
     padding: 12px 10px;
   }
-  .main-feed {
-    padding: 22px 0 0 0;
-    min-height: 80vh;
-  }
+  .main-feed { padding: 23px 0 0 0; min-height: 80vh; }
 }
-
 @media (max-width: 700px) {
-  .sidebar-left {
-    font-size: 0.99rem;
-    padding: 10px 4px;
-    width: 100vw;
-  }
-  .main-feed {
-    padding-top: 8px;
-    max-width: 100vw;
-  }
-  .section {
-    max-width: 100vw;
-    padding: 0 2vw;
-  }
-  .profile-card input, .profile-card textarea {
-    max-width: 96vw;
-  }
+  .sidebar-left { font-size: 0.99rem; padding: 10px 4px; width: 100vw; }
+  .main-feed { padding-top: 8px; max-width: 100vw; }
+  .section { max-width: 100vw; padding: 0 2vw; }
+  .profile-card input, .profile-card textarea { max-width: 96vw; }
 }
-
 @media (max-width: 480px) {
-  .auth-card {
-    padding: 18px 3vw 12px 3vw;
-    max-width: 99vw;
-  }
-  .sidebar-left {
-    font-size: 0.94rem;
-    padding: 6px 1vw;
-  }
+  .sidebar-left { font-size: 0.94rem; padding: 6px 1vw; }
 }
