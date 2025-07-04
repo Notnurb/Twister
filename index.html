@@ -6,7 +6,37 @@
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
-  <script type="module" src="script.js"></script>
+
+  <!-- Supabase (v2, window.supabase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Replace with your actual Supabase anon key!
+    const supabaseUrl = 'https://iajztbvoyugbbcrouppm.supabase.co';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
+    window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
+
+  <!-- Firebase App (compat for easy browser usage) -->
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyChTLDOW2M0AwfQcXYs1h50nnsGdSPw9B4",
+      authDomain: "twister-production.firebaseapp.com",
+      projectId: "twister-production",
+      storageBucket: "twister-production.appspot.com",
+      messagingSenderId: "132332523540",
+      appId: "1:132332523540:web:3bdccc6597951a6ee81701",
+      measurementId: "G-ZG11HTRYGM"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const analytics = firebase.analytics();
+    window.firedb = firebase.database();
+  </script>
+
+  <!-- Your main JS (write everything here or as a separate file) -->
+  <script src="script.js" defer></script>
 </head>
 <body>
   <div class="layout">
@@ -38,7 +68,7 @@
 
       <section id="section-notifications" class="section"><div class="empty">No notifications yet.</div></section>
       
-      <!-- Profile, dynamic by user -->
+      <!-- Profile -->
       <section id="section-profile" class="section">
         <div id="profileDetail"></div>
         <h3 id="profilePostsTitle">Your Posts</h3>
