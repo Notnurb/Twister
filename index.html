@@ -16,50 +16,33 @@
         <button class="nav-btn active" data-section="home">🏠 Home</button>
         <button class="nav-btn" data-section="explore">🔍 Explore</button>
         <button class="nav-btn" data-section="notifications">🔔 Notifications</button>
-        <button class="nav-btn" data-section="messages">✉️ Messages</button>
-        <button class="nav-btn" data-section="bookmarks">🔖 Bookmarks</button>
-        <button class="nav-btn" data-section="lists">📃 Lists</button>
         <button class="nav-btn" data-section="profile">👤 Profile</button>
         <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
     </aside>
-
     <main class="main-feed">
       <!-- Home -->
       <section id="section-home" class="section active">
         <div class="post-input">
-          <textarea id="tweetText" placeholder="What's happening?" rows="3"></textarea>
-          <div class="media-upload">
-            <input type="file" id="mediaInput" accept="image/*,video/*" />
-            <div id="mediaPreview"></div>
-          </div>
-          <button id="tweetButton" class="tweet-btn">Post</button>
+          <input type="file" id="videoInput" accept="video/*" />
+          <div id="videoPreview"></div>
+          <button id="postVideoBtn" class="tweet-btn">Post Video</button>
         </div>
         <div id="feed" class="feed"></div>
       </section>
 
       <!-- Explore -->
       <section id="section-explore" class="section">
-        <h2 style="margin-bottom:16px;">Trending on Twister</h2>
-        <div class="explore-feed" id="exploreFeed"></div>
+        <h2>Trending Videos</h2>
+        <div class="feed" id="exploreFeed"></div>
       </section>
 
       <section id="section-notifications" class="section"><div class="empty">No notifications yet.</div></section>
-      <section id="section-messages" class="section"><div class="empty">No messages yet.</div></section>
-      <section id="section-bookmarks" class="section"><div class="empty">No bookmarks yet.</div></section>
-      <section id="section-lists" class="section"><div class="empty">No lists yet.</div></section>
-
-      <!-- Profile -->
+      
+      <!-- Profile, dynamic by user -->
       <section id="section-profile" class="section">
-        <div class="profile-card">
-          <img id="profilePic" class="profile-pic" src="https://placehold.co/80x80" />
-          <input type="file" id="newPfp" accept="image/*" />
-          <input type="text" id="displayName" placeholder="Display Name" />
-          <input type="text" id="username" placeholder="@username" />
-          <textarea id="bio" placeholder="Bio"></textarea>
-          <button id="saveProfileBtn" class="tweet-btn">Save Profile</button>
-        </div>
-        <h3>Your Posts</h3>
+        <div id="profileDetail"></div>
+        <h3 id="profilePostsTitle">Your Posts</h3>
         <div id="profilePosts" class="feed"></div>
       </section>
 
