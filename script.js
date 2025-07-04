@@ -1,10 +1,13 @@
-// ===== Data Management =====
+// Use the global supabase client (set in index.html)
+const supabase = window.supabaseClient;
+
+// Simple user profile (feel free to expand)
 function getUser() {
   let user = JSON.parse(localStorage.getItem('twisterUser'));
   if (!user) {
     user = {
-      username: '@anon',
-      displayName: 'I can change my name in the profile tab!',
+      username: '@anon' + Math.floor(Math.random() * 10000),
+      displayName: 'Anonymous',
       profilePic: 'https://placehold.co/74x74',
       bio: '',
       following: []
@@ -13,153 +16,151 @@ function getUser() {
   }
   return user;
 }
-
 function setUser(user) {
   localStorage.setItem('twisterUser', JSON.stringify(user));
 }
 
-function getAllUsers() {
-  return JSON.parse(localStorage.getItem('twisterAllUsers') || '[]');
-}
-function setAllUsers(users) {
-  localStorage.setItem('twisterAllUsers', JSON.stringify(users));
-}
-function saveOrUpdateUser(user) {
-  let all = getAllUsers();
-  const idx = all.findIndex(u => u.username === user.username);
-  if (idx >= 0) all[idx] = user;
-  else all.push(user);
-  setAllUsers(all);
-}
-
-// ===== Page Navigation =====
+// ===== Posting Handler =====
 document.addEventListener('DOMContentLoaded', () => {
+  // Home Posting
+  document.getElementById('tweetButton').onclick = async () => {
+    const tweetText = document.getElementById('tweetText').value.trim();
+    if (!tweetText) return;
+    const me = getUser();
+    const post = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
+      username: me.username,
+      displayName: me.displayName,
+      profilePic: me.profilePic,
+      text: tweetText,
+      created: new Date().toISOString(),
+      likes: [],
+      comments: []
+    };
+    await supabase.from('posts').insert([post]);
+    document.getElementById('tweetText').value = '';
+    loadFeed();
+    renderExplore();
+    renderProfile(me.username);
+  };
+
+  // Nav
   document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const section = btn.dataset.section;
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('section-' + section).classList.add('active');
       if (section === "profile") renderProfile(getUser().username);
-      if (section === "home") renderFeed();
+      if (section === "home") loadFeed();
       if (section === "explore") renderExplore();
-    });
+    };
   });
 
-  // ===== Posting Logic (Text Only) =====
-  const tweetButton = document.getElementById('tweetButton');
-  const tweetText = document.getElementById('tweetText');
-  tweetButton.addEventListener('click', () => {
-    const text = tweetText.value.trim();
-    if (!text) return;
-    const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-    posts.unshift({
-      id: Date.now(),
-      username: getUser().username,
-      displayName: getUser().displayName,
-      profilePic: getUser().profilePic,
-      text,
-      likes: [],
-      comments: [],
-      created: new Date().toISOString(),
-    });
-    localStorage.setItem('twisterPosts', JSON.stringify(posts));
-    tweetText.value = '';
-    renderFeed();
-    renderExplore();
-  });
-
-  // ===== Initial User/Feed Setup =====
-  let me = getUser();
-  let all = getAllUsers();
-  if (!all.some(u => u.username === me.username)) all.push(me), setAllUsers(all);
-  renderFeed();
-  renderProfile(me.username);
+  // On start
+  loadFeed();
+  renderProfile(getUser().username);
   renderExplore();
 });
 
-// ===== Profile Logic =====
-function renderProfile(username) {
-  const user = username ? getAllUsers().find(u => u.username === username) || getUser() : getUser();
-  const isSelf = user.username === getUser().username;
-  const card = document.createElement('div');
-  card.className = 'profile-card';
-  card.innerHTML = `
-    <img class="profile-pic" src="${user.profilePic || 'https://placehold.co/74x74'}" />
-    <div style="font-size:1.1rem;font-weight:700;color:#fff;margin:4px 0">${user.displayName || 'Anonymous'}</div>
-    <div style="color:#1da1f2;margin-bottom:4px;">${user.username}</div>
-    <div style="font-size:.97rem;color:#aab4c1;margin-bottom:7px">${user.bio || ''}</div>
-    ${isSelf ? `
-      <input type="text" id="editDisplayName" placeholder="Display Name" value="${user.displayName || ''}"/>
-      <input type="text" id="editUsername" placeholder="@username" value="${user.username || ''}"/>
-      <textarea id="editBio" placeholder="Bio">${user.bio || ''}</textarea>
-      <input type="file" id="editPfp" accept="image/*" />
-      <button class="tweet-btn" id="saveProfileBtn">Save Profile</button>
-    ` : `
-      <div class="profile-actions">
-        <button id="followBtn" class="${getUser().following?.includes(user.username) ? 'following' : ''}">
-          ${getUser().following?.includes(user.username) ? 'Following' : 'Follow'}
-        </button>
-      </div>
-    `}
-  `;
-  const detail = document.getElementById('profileDetail');
-  detail.innerHTML = '';
-  detail.appendChild(card);
-  document.getElementById('profilePostsTitle').innerText = isSelf ? 'Your Posts' : `${user.displayName}'s Posts`;
-  renderProfilePosts(user.username);
-
-  if (isSelf) {
-    card.querySelector('#saveProfileBtn').onclick = function() {
-      let u = getUser();
-      u.displayName = card.querySelector('#editDisplayName').value.trim() || 'Anonymous';
-      u.username = card.querySelector('#editUsername').value.trim() || '@anon';
-      u.bio = card.querySelector('#editBio').value.trim();
-      if (card.querySelector('#editPfp').files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          u.profilePic = e.target.result;
-          setUser(u); saveOrUpdateUser(u);
-          renderProfile(u.username);
-        };
-        reader.readAsDataURL(card.querySelector('#editPfp').files[0]);
-        return;
-      }
-      setUser(u); saveOrUpdateUser(u); renderProfile(u.username);
-    };
-  } else {
-    card.querySelector('#followBtn').onclick = function() {
-      let me = getUser();
-      if (!me.following) me.following = [];
-      if (me.following.includes(user.username)) {
-        me.following = me.following.filter(f => f !== user.username);
-      } else {
-        me.following.push(user.username);
-      }
-      setUser(me);
-      renderProfile(user.username);
-    };
-  }
-}
-
-// ===== Feed Logic with Likes, Comments, Profile Link =====
-function renderFeed() {
+// ===== Load Feed from Supabase =====
+async function loadFeed() {
+  const { data, error } = await supabase.from('posts').select('*').order('created', { ascending: false });
   const feed = document.getElementById('feed');
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  feed.innerHTML = posts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
-  for (const post of posts) {
-    feed.appendChild(createPostElement(post));
+  if (error) {
+    feed.innerHTML = `<div class="empty">Error loading posts.</div>`;
+    return;
   }
+  feed.innerHTML = data.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
+  for (const post of data) feed.appendChild(createPostElement(post));
 }
 
+// ===== Explore (Trending by interactions) =====
+async function renderExplore() {
+  const { data } = await supabase.from('posts').select('*');
+  const sorted = (data || []).slice().sort((a, b) =>
+    ((b.likes?.length || 0) + (b.comments?.length || 0)) -
+    ((a.likes?.length || 0) + (a.comments?.length || 0))
+  ).slice(0, 10);
+  const exploreFeed = document.getElementById('exploreFeed');
+  exploreFeed.innerHTML = sorted.length === 0 ? `<div class="empty">Nothing trending yet.</div>` : '';
+  sorted.forEach(post => exploreFeed.appendChild(createPostElement(post)));
+}
+
+// ===== Profile Rendering =====
+function renderProfile(username) {
+  // Find user by username from posts (for demo, normally you'd have a users table)
+  supabase.from('posts').select('*').eq('username', username).limit(1).then(({ data }) => {
+    let user;
+    if (data && data.length > 0) {
+      user = {
+        username: data[0].username,
+        displayName: data[0].displayName,
+        profilePic: data[0].profilePic,
+        bio: '', // can add bio support later
+      };
+    } else {
+      user = getUser();
+    }
+    const isSelf = (user.username === getUser().username);
+    const card = document.createElement('div');
+    card.className = 'profile-card';
+    card.innerHTML = `
+      <img class="profile-pic" src="${user.profilePic}" />
+      <div style="font-size:1.1rem;font-weight:700;color:#fff;margin:4px 0">${user.displayName}</div>
+      <div style="color:#1da1f2;margin-bottom:4px;">${user.username}</div>
+      <div style="font-size:.97rem;color:#aab4c1;margin-bottom:7px">${user.bio || ''}</div>
+      ${isSelf ? `
+        <input type="text" id="editDisplayName" placeholder="Display Name" value="${user.displayName}"/>
+        <input type="text" id="editUsername" placeholder="@username" value="${user.username}"/>
+        <input type="file" id="editPfp" accept="image/*" />
+        <button class="tweet-btn" id="saveProfileBtn">Save Profile</button>
+      ` : ``}
+    `;
+    const detail = document.getElementById('profileDetail');
+    detail.innerHTML = '';
+    detail.appendChild(card);
+    document.getElementById('profilePostsTitle').innerText = isSelf ? 'Your Posts' : `${user.displayName}'s Posts`;
+    renderProfilePosts(user.username);
+
+    if (isSelf) {
+      card.querySelector('#saveProfileBtn').onclick = function() {
+        let u = getUser();
+        u.displayName = card.querySelector('#editDisplayName').value.trim() || 'Anonymous';
+        u.username = card.querySelector('#editUsername').value.trim() || '@anon';
+        if (card.querySelector('#editPfp').files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            u.profilePic = e.target.result;
+            setUser(u);
+            renderProfile(u.username);
+          };
+          reader.readAsDataURL(card.querySelector('#editPfp').files[0]);
+          return;
+        }
+        setUser(u); renderProfile(u.username);
+      };
+    }
+  });
+}
+
+// ===== Profile Posts =====
+async function renderProfilePosts(username) {
+  const { data } = await supabase.from('posts').select('*').eq('username', username).order('created', { ascending: false });
+  const profilePosts = document.getElementById('profilePosts');
+  profilePosts.innerHTML = data.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
+  data.forEach(post => profilePosts.appendChild(createPostElement(post)));
+}
+
+// ====== Helpers: Post Element =====
 function createPostElement(post) {
   const div = document.createElement('div');
   div.className = 'tweet';
   div.innerHTML = `
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
-      <img src="${post.profilePic || 'https://placehold.co/38x38'}" alt="pfp" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
-      <span class="profile-link" data-username="${post.username}">${post.displayName}</span>
+      <img src="${post.profilePic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+      <span class="profile-link" data-username="${post.username}" style="font-weight:700;text-decoration:underline dotted #1976d2;cursor:pointer">${post.displayName}</span>
       <span style="color:#5ad;">${post.username}</span>
     </div>
     <div style="white-space:pre-line;margin-bottom:7px;">${post.text || ''}</div>
@@ -172,23 +173,23 @@ function createPostElement(post) {
   `;
   // Profile click
   div.querySelector('.profile-link').onclick = function() {
-    showProfile(post.username);
+    renderProfile(post.username);
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-profile').classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   };
 
   // Like button
-  div.querySelector('.like-btn').onclick = function() {
-    let posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-    let idx = posts.findIndex(p => p.id === post.id);
-    if (idx >= 0) {
-      let likes = posts[idx].likes || [];
-      const me = getUser().username;
-      if (likes.includes(me)) likes = likes.filter(u => u !== me);
-      else likes.push(me);
-      posts[idx].likes = likes;
-      localStorage.setItem('twisterPosts', JSON.stringify(posts));
-      renderFeed();
-      renderExplore();
-    }
+  div.querySelector('.like-btn').onclick = async function() {
+    let { data: curr } = await supabase.from('posts').select('*').eq('id', post.id).single();
+    if (!curr) return;
+    let likes = curr.likes || [];
+    const me = getUser().username;
+    if (likes.includes(me)) likes = likes.filter(u => u !== me);
+    else likes.push(me);
+    await supabase.from('posts').update({ likes }).eq('id', post.id);
+    loadFeed();
+    renderExplore();
   };
 
   // Comment button
@@ -200,57 +201,30 @@ function createPostElement(post) {
   return div;
 }
 
+// ===== Comments =====
 function renderComments(postId, cmtSec) {
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  const idx = posts.findIndex(p => p.id === postId);
-  if (idx < 0) return;
-  cmtSec.innerHTML = '';
-  (posts[idx].comments || []).forEach(cmt => {
-    cmtSec.innerHTML += `<div class="comment"><b>${cmt.user}</b>: ${cmt.text}</div>`;
+  supabase.from('posts').select('*').eq('id', postId).single().then(({ data }) => {
+    cmtSec.innerHTML = '';
+    (data.comments || []).forEach(cmt => {
+      cmtSec.innerHTML += `<div class="comment"><b>${cmt.user}</b>: ${cmt.text}</div>`;
+    });
+    cmtSec.innerHTML += `
+      <div class="add-comment">
+        <input type="text" placeholder="Add a comment..." />
+        <button>Post</button>
+      </div>
+    `;
+    cmtSec.querySelector('button').onclick = async function() {
+      const input = cmtSec.querySelector('input');
+      if (input.value.trim() === '') return;
+      const cmt = { user: getUser().username, text: input.value.trim() };
+      const postResp = await supabase.from('posts').select('*').eq('id', postId).single();
+      let comments = postResp.data.comments || [];
+      comments.push(cmt);
+      await supabase.from('posts').update({ comments }).eq('id', postId);
+      renderComments(postId, cmtSec);
+      loadFeed();
+      renderExplore();
+    };
   });
-  cmtSec.innerHTML += `
-    <div class="add-comment">
-      <input type="text" placeholder="Add a comment..." />
-      <button>Post</button>
-    </div>
-  `;
-  cmtSec.querySelector('button').onclick = function() {
-    const input = cmtSec.querySelector('input');
-    if (input.value.trim() === '') return;
-    posts[idx].comments = posts[idx].comments || [];
-    posts[idx].comments.push({ user: getUser().username, text: input.value.trim() });
-    localStorage.setItem('twisterPosts', JSON.stringify(posts));
-    renderComments(postId, cmtSec);
-    renderFeed();
-    renderExplore();
-  };
-}
-
-// ===== Profile Posts =====
-function renderProfilePosts(username) {
-  const posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  const userPosts = posts.filter(p => p.username === username);
-  const profilePosts = document.getElementById('profilePosts');
-  profilePosts.innerHTML = userPosts.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
-  userPosts.forEach(post => profilePosts.appendChild(createPostElement(post)));
-}
-
-// ===== Explore Logic (Trending by likes+comments) =====
-function renderExplore() {
-  const exploreFeed = document.getElementById('exploreFeed');
-  let posts = JSON.parse(localStorage.getItem('twisterPosts') || '[]');
-  posts = posts.slice().sort((a, b) =>
-    ((b.likes ? b.likes.length : 0) + (b.comments ? b.comments.length : 0)) -
-    ((a.likes ? a.likes.length : 0) + (a.comments ? a.comments.length : 0))
-  ).slice(0, 10); // Top 10 trending
-  exploreFeed.innerHTML = posts.length === 0 ? `<div class="empty">Nothing trending yet.</div>` : '';
-  posts.forEach(post => exploreFeed.appendChild(createPostElement(post)));
-}
-
-// ===== View Any User Profile =====
-function showProfile(username) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-profile').classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  renderProfile(username);
 }
