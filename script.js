@@ -1,16 +1,14 @@
-// Use the global supabase client (set in index.html)
-const supabase = window.supabaseClient;
+const db = window.db;
 
-// Simple user profile (feel free to expand)
+// Simple local profile
 function getUser() {
   let user = JSON.parse(localStorage.getItem('twisterUser'));
   if (!user) {
     user = {
       username: '@anon' + Math.floor(Math.random() * 10000),
-      displayName: 'I can Change my name in the profile tab! 💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀',
+      displayName: 'Anonymous',
       profilePic: 'https://placehold.co/74x74',
-      bio: '',
-      following: []
+      bio: ''
     };
     localStorage.setItem('twisterUser', JSON.stringify(user));
   }
@@ -22,29 +20,24 @@ function setUser(user) {
 
 // ===== Posting Handler =====
 document.addEventListener('DOMContentLoaded', () => {
-  // Home Posting
   document.getElementById('tweetButton').onclick = async () => {
     const tweetText = document.getElementById('tweetText').value.trim();
     if (!tweetText) return;
     const me = getUser();
     const post = {
-      id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
-      username: me.username,
-      displayName: me.displayName,
-      profilePic: me.profilePic,
-      text: tweetText,
-      created: new Date().toISOString(),
+      user: me.username,
+      content: tweetText,
+      created_at: new Date(),
       likes: [],
       comments: []
     };
-    await supabase.from('posts').insert([post]);
+    await db.collection('posts').add(post);
     document.getElementById('tweetText').value = '';
     loadFeed();
     renderExplore();
     renderProfile(me.username);
   };
 
-  // Nav
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -58,47 +51,48 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-  // On start
   loadFeed();
   renderProfile(getUser().username);
   renderExplore();
 });
 
-// ===== Load Feed from Supabase =====
+// ===== Load Feed =====
 async function loadFeed() {
-  const { data, error } = await supabase.from('posts').select('*').order('created', { ascending: false });
+  const snap = await db.collection('posts').orderBy('created_at', 'desc').get();
   const feed = document.getElementById('feed');
-  if (error) {
-    feed.innerHTML = `<div class="empty">Error loading posts.</div>`;
+  if (snap.empty) {
+    feed.innerHTML = `<div class="empty">No posts yet.</div>`;
     return;
   }
-  feed.innerHTML = data.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
-  for (const post of data) feed.appendChild(createPostElement(post));
+  feed.innerHTML = '';
+  snap.forEach(doc => feed.appendChild(createPostElement(doc)));
 }
 
 // ===== Explore (Trending by interactions) =====
 async function renderExplore() {
-  const { data } = await supabase.from('posts').select('*');
-  const sorted = (data || []).slice().sort((a, b) =>
+  const snap = await db.collection('posts').get();
+  const posts = [];
+  snap.forEach(doc => posts.push({ ...doc.data(), id: doc.id }));
+  const sorted = posts.sort((a, b) =>
     ((b.likes?.length || 0) + (b.comments?.length || 0)) -
     ((a.likes?.length || 0) + (a.comments?.length || 0))
   ).slice(0, 10);
   const exploreFeed = document.getElementById('exploreFeed');
-  exploreFeed.innerHTML = sorted.length === 0 ? `<div class="empty">Nothing trending yet.</div>` : '';
-  sorted.forEach(post => exploreFeed.appendChild(createPostElement(post)));
+  exploreFeed.innerHTML = (!sorted || sorted.length === 0) ? `<div class="empty">Nothing trending yet.</div>` : '';
+  sorted.forEach(post => exploreFeed.appendChild(createPostElement({ data: () => post, id: post.id })));
 }
 
 // ===== Profile Rendering =====
 function renderProfile(username) {
-  // Find user by username from posts (for demo, normally you'd have a users table)
-  supabase.from('posts').select('*').eq('username', username).limit(1).then(({ data }) => {
+  db.collection('posts').where('user', '==', username).limit(1).get().then(snap => {
     let user;
-    if (data && data.length > 0) {
+    if (!snap.empty) {
+      const doc = snap.docs[0];
       user = {
-        username: data[0].username,
-        displayName: data[0].displayName,
-        profilePic: data[0].profilePic,
-        bio: '', // can add bio support later
+        username: doc.data().user,
+        displayName: doc.data().user,
+        profilePic: 'https://placehold.co/74x74',
+        bio: ''
       };
     } else {
       user = getUser();
@@ -147,33 +141,38 @@ function renderProfile(username) {
 
 // ===== Profile Posts =====
 async function renderProfilePosts(username) {
-  const { data } = await supabase.from('posts').select('*').eq('username', username).order('created', { ascending: false });
+  const snap = await db.collection('posts').where('user', '==', username).orderBy('created_at', 'desc').get();
   const profilePosts = document.getElementById('profilePosts');
-  profilePosts.innerHTML = data.length === 0 ? `<div class="empty">No posts yet.</div>` : '';
-  data.forEach(post => profilePosts.appendChild(createPostElement(post)));
+  if (snap.empty) {
+    profilePosts.innerHTML = `<div class="empty">No posts yet.</div>`;
+    return;
+  }
+  profilePosts.innerHTML = '';
+  snap.forEach(doc => profilePosts.appendChild(createPostElement(doc)));
 }
 
 // ====== Helpers: Post Element =====
-function createPostElement(post) {
+function createPostElement(doc) {
+  const post = doc.data();
+  const postId = doc.id;
   const div = document.createElement('div');
   div.className = 'tweet';
   div.innerHTML = `
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
-      <img src="${post.profilePic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
-      <span class="profile-link" data-username="${post.username}" style="font-weight:700;text-decoration:underline dotted #1976d2;cursor:pointer">${post.displayName}</span>
-      <span style="color:#5ad;">${post.username}</span>
+      <img src="https://placehold.co/38x38" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+      <span class="profile-link" data-username="${post.user}" style="font-weight:700;text-decoration:underline dotted #1976d2;cursor:pointer">${post.user}</span>
     </div>
-    <div style="white-space:pre-line;margin-bottom:7px;">${post.text || ''}</div>
+    <div style="white-space:pre-line;margin-bottom:7px;">${post.content || ''}</div>
     <div class="tweet-footer">
-      <button class="like-btn${post.likes && post.likes.includes(getUser().username) ? ' liked' : ''}" data-id="${post.id}">❤️ ${post.likes ? post.likes.length : 0}</button>
-      <button class="comment-btn" data-id="${post.id}">💬 ${post.comments ? post.comments.length : 0}</button>
-      <span style="color:#7a7;">${new Date(post.created).toLocaleString()}</span>
+      <button class="like-btn${post.likes && post.likes.includes(getUser().username) ? ' liked' : ''}" data-id="${postId}">❤️ ${post.likes ? post.likes.length : 0}</button>
+      <button class="comment-btn" data-id="${postId}">💬 ${post.comments ? post.comments.length : 0}</button>
+      <span style="color:#7a7;">${post.created_at ? new Date(post.created_at.seconds*1000).toLocaleString() : ''}</span>
     </div>
     <div class="comment-section" style="display:none"></div>
   `;
   // Profile click
   div.querySelector('.profile-link').onclick = function() {
-    renderProfile(post.username);
+    renderProfile(post.user);
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-profile').classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -181,13 +180,13 @@ function createPostElement(post) {
 
   // Like button
   div.querySelector('.like-btn').onclick = async function() {
-    let { data: curr } = await supabase.from('posts').select('*').eq('id', post.id).single();
-    if (!curr) return;
-    let likes = curr.likes || [];
+    const docRef = db.collection('posts').doc(postId);
+    const docSnap = await docRef.get();
+    let likes = docSnap.data().likes || [];
     const me = getUser().username;
     if (likes.includes(me)) likes = likes.filter(u => u !== me);
     else likes.push(me);
-    await supabase.from('posts').update({ likes }).eq('id', post.id);
+    await docRef.update({ likes });
     loadFeed();
     renderExplore();
   };
@@ -196,16 +195,17 @@ function createPostElement(post) {
   div.querySelector('.comment-btn').onclick = function() {
     const cmtSec = div.querySelector('.comment-section');
     cmtSec.style.display = cmtSec.style.display === 'block' ? 'none' : 'block';
-    renderComments(post.id, cmtSec);
+    renderComments(postId, cmtSec);
   };
   return div;
 }
 
 // ===== Comments =====
 function renderComments(postId, cmtSec) {
-  supabase.from('posts').select('*').eq('id', postId).single().then(({ data }) => {
+  db.collection('posts').doc(postId).get().then(docSnap => {
+    const post = docSnap.data();
     cmtSec.innerHTML = '';
-    (data.comments || []).forEach(cmt => {
+    (post.comments || []).forEach(cmt => {
       cmtSec.innerHTML += `<div class="comment"><b>${cmt.user}</b>: ${cmt.text}</div>`;
     });
     cmtSec.innerHTML += `
@@ -217,11 +217,11 @@ function renderComments(postId, cmtSec) {
     cmtSec.querySelector('button').onclick = async function() {
       const input = cmtSec.querySelector('input');
       if (input.value.trim() === '') return;
-      const cmt = { user: getUser().username, text: input.value.trim() };
-      const postResp = await supabase.from('posts').select('*').eq('id', postId).single();
-      let comments = postResp.data.comments || [];
+      const me = getUser();
+      const cmt = { user: me.username, text: input.value.trim() };
+      let comments = post.comments || [];
       comments.push(cmt);
-      await supabase.from('posts').update({ comments }).eq('id', postId);
+      await db.collection('posts').doc(postId).update({ comments });
       renderComments(postId, cmtSec);
       loadFeed();
       renderExplore();
