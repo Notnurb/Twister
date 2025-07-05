@@ -1,6 +1,6 @@
 const { collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where } = window.firestore;
 
-// --- Robust Page Switching ---
+// Bulletproof navigation switching
 function switchSection(sectionName) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
