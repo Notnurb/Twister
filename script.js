@@ -1,6 +1,15 @@
 const { collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where } = window.firestore;
 
-// Demo: Simple local user (replace with Firebase Auth for real use)
+// --- Robust Page Switching ---
+function switchSection(sectionName) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const btn = document.querySelector(`.nav-btn[data-section="${sectionName}"]`);
+  const section = document.getElementById('section-' + sectionName);
+  if (btn) btn.classList.add('active');
+  if (section) section.classList.add('active');
+}
+
 function getUser() {
   return JSON.parse(localStorage.getItem('twisterUser')) || {
     username: "alexdafirst",
@@ -10,14 +19,10 @@ function getUser() {
 }
 function setUser(u) { localStorage.setItem('twisterUser', JSON.stringify(u)); }
 
-// Navigation
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.onclick = () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById('section-' + btn.dataset.section).classList.add('active');
+      switchSection(btn.dataset.section);
       if (btn.dataset.section === "home") loadFeed();
       if (btn.dataset.section === "profile") renderProfile(getUser().username);
       if (btn.dataset.section === "explore") renderExplore();
@@ -31,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProfile(getUser().username);
 });
 
-// Posts
 async function createPost() {
   const text = document.getElementById('tweetText').value.trim();
   if (!text) return;
@@ -71,7 +75,6 @@ async function renderExplore() {
   posts.slice(0, 10).forEach(post => exploreFeed.appendChild(createPostElement(post)));
 }
 
-// Profiles
 async function renderProfile(username) {
   const currentUser = getUser().username;
   let userData;
@@ -154,9 +157,7 @@ function createPostElement(post, id) {
   `;
   div.querySelector('.profile-link').onclick = () => {
     renderProfile(post.user);
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById('section-profile').classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    switchSection("profile");
   };
   return div;
 }
