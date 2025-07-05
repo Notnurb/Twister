@@ -1,17 +1,19 @@
 :root {
   --accent: #1da1f2;
-  --accent-dark: #1485b9;
+  --accent-hover: #1485b9;
+  --accent-faded: #1da1f222;
   --bg-main: #10141a;
-  --bg-alt: #17191c;
+  --bg-alt: #191d23;
   --bg-card: #181a20;
-  --border: #222c38;
-  --text: #f6f8fa;
-  --text-muted: #b5bbc5;
-  --card-radius: 20px;
-  --input-radius: 14px;
-  --shadow: 0 2px 16px #0003;
-  --shadow-light: 0 1px 6px #0002;
-  --font-main: 'Inter', 'Ubuntu', system-ui, sans-serif;
+  --border: #212733;
+  --text: #f7fafc;
+  --text-muted: #a3b4ca;
+  --shadow: 0 2px 16px #0004;
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 5px;
+  --font-main: 'Inter', 'Ubuntu', 'Segoe UI', 'Arial', sans-serif;
 }
 
 html, body {
@@ -22,205 +24,303 @@ html, body {
   font-family: var(--font-main);
   min-height: 100vh;
 }
-body { min-height: 100vh; }
 
 .layout {
   display: flex;
   min-height: 100vh;
   background: var(--bg-main);
+  width: 100vw;
 }
+
 .sidebar-left {
-  width: 230px;
+  width: 250px;
   background: var(--bg-alt);
-  border-right: 1px solid var(--border);
-  padding: 26px 12px 0 0;
+  border-right: 1.5px solid var(--border);
+  padding: 36px 0 0 0;
   min-height: 100vh;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
+
 .logo {
   font-size: 2.1rem;
-  margin: 0 0 23px 18px;
+  margin: 0 0 32px 36px;
   color: var(--accent);
   font-weight: bold;
   letter-spacing: 1px;
   user-select: none;
+  text-shadow: 0 3px 12px #1da1f277;
 }
+
 .nav-links {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 16px;
+  width: 100%;
 }
+
 .nav-btn {
+  width: 85%;
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 1.14rem;
+  font-size: 1.16rem;
   text-align: left;
   padding: 13px 26px;
   border-radius: 999px;
-  transition: background 0.15s, color 0.14s, box-shadow 0.13s;
+  transition: background 0.16s, color 0.14s, box-shadow 0.13s;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   outline: none;
-  margin-left: 8px;
+  margin-left: 18px;
+  margin-bottom: 1px;
 }
 .nav-btn.active,
 .nav-btn:hover {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px #1da1f233;
+  box-shadow: 0 4px 18px #1da1f233;
 }
+
 .main-feed {
   flex: 1;
-  padding: 38px 0 0 0;
-  max-width: 600px;
+  padding: 40px 0 0 0;
+  max-width: 670px;
   margin: 0 auto;
-  min-width: 310px;
+  min-width: 320px;
 }
-.section { display: none; animation: fadeIn 0.26s; }
+
+.section { display: none; animation: fadeIn 0.28s;}
 .section.active { display: block; }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px);}
+  from { opacity: 0; transform: translateY(20px);}
   to   { opacity: 1; transform: none;}
 }
+
 .post-input {
   background: var(--bg-alt);
-  border-radius: var(--card-radius);
-  margin-bottom: 27px;
-  padding: 26px 22px 19px 22px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 32px;
+  padding: 26px 22px 22px 22px;
   box-shadow: var(--shadow);
   border: 1.5px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
 }
+
 #tweetText {
   width: 100%;
-  background: #23262c;
+  background: #212733;
   color: var(--text);
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   border: none;
-  padding: 14px;
-  border-radius: var(--input-radius);
+  padding: 16px;
+  border-radius: var(--radius-lg);
   resize: vertical;
   min-height: 46px;
   outline: none;
-  margin-bottom: 9px;
-  transition: box-shadow 0.18s;
-  box-shadow: 0 2px 8px #1da1f207;
+  margin-bottom: 8px;
+  transition: box-shadow 0.17s, background 0.13s;
+  box-shadow: 0 2px 9px #1da1f205;
 }
+
 #tweetText:focus {
   box-shadow: 0 0 0 2px var(--accent);
-  background: #24292f;
+  background: #262d35;
 }
-.tweet-btn {
+
+.tweet-btn, #newMessageBtn, #saveProfileBtn {
   align-self: flex-end;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 16px;
+  border-radius: 18px;
   font-weight: 700;
   font-size: 1.13rem;
-  padding: 11px 32px;
+  padding: 11px 35px;
   margin-top: 4px;
   cursor: pointer;
-  transition: 0.14s;
-  box-shadow: 0 2px 12px #1da1f233;
+  transition: background 0.14s, box-shadow 0.12s, transform 0.09s;
+  box-shadow: 0 2px 12px #1da1f228;
   outline: none;
 }
-.tweet-btn:hover {
-  background: var(--accent-dark);
-  transform: translateY(-1.5px) scale(1.035);
-  box-shadow: 0 6px 24px #1da1f266;
+.tweet-btn:hover, #newMessageBtn:hover, #saveProfileBtn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.04);
+  box-shadow: 0 6px 22px #1da1f255;
 }
-.feed { margin-top: 22px; }
+
+.feed { margin-top: 26px; }
+
 .tweet {
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   margin-bottom: 22px;
   padding: 18px 22px 13px 22px;
   box-shadow: var(--shadow-light);
-  border: 1px solid #20232a;
-  transition: box-shadow 0.12s, border 0.15s;
+  border: 1.5px solid #1b2028;
+  transition: box-shadow 0.13s, border 0.12s, background 0.13s;
+  position: relative;
 }
 .tweet:hover {
   border: 1.5px solid var(--accent);
-  box-shadow: 0 4px 22px #1da1f233;
+  background: #151a25;
+  box-shadow: 0 6px 24px #1da1f233;
 }
+
 .empty {
-  color: #676f7d;
+  color: #6b7788;
   text-align: center;
-  margin: 35px 0 18px 0;
-  font-size: 1.11rem;
-  opacity: 0.78;
-  letter-spacing: 0.03em;
+  margin: 40px 0 18px 0;
+  font-size: 1.13rem;
+  opacity: 0.81;
+  letter-spacing: 0.02em;
 }
+
 .profile-card {
   background: var(--bg-alt);
-  border-radius: var(--card-radius);
-  margin-bottom: 28px;
-  padding: 24px 18px 18px 18px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 35px;
+  padding: 26px 22px 22px 22px;
   text-align: center;
   box-shadow: var(--shadow-light);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   max-width: 350px;
   margin-left: auto;
   margin-right: auto;
 }
+
 .profile-pic {
-  width: 80px;
-  height: 80px;
+  width: 86px;
+  height: 86px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 8px;
-  border: 2.2px solid var(--accent);
+  margin-bottom: 12px;
+  border: 2.5px solid var(--accent);
   background: #fff2;
   box-shadow: 0 2px 10px #1da1f233;
 }
+
 .profile-card input[type="text"], .profile-card textarea {
   width: 94%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin: 5px 0;
+  padding: 9px 13px;
+  border-radius: 9px;
+  margin: 6px 0;
   border: none;
-  background: #23262c;
+  background: #212733;
   color: #fff;
-  font-size: 1.07rem;
-  transition: box-shadow 0.14s;
+  font-size: 1.09rem;
+  transition: box-shadow 0.13s, background 0.13s;
 }
 .profile-card input[type="text"]:focus, .profile-card textarea:focus {
   outline: 2px solid var(--accent);
-  background: #252a31;
+  background: #242d36;
 }
+
 .profile-card button {
   margin-top: 10px;
   width: 85%;
 }
+
 .profile-link {
   color: var(--accent);
   cursor: pointer;
   font-weight: 600;
-  transition: text-decoration 0.1s;
+  transition: text-decoration 0.1s, color 0.12s;
+  text-decoration: underline dotted var(--accent) 1.8px;
 }
 .profile-link:hover {
-  text-decoration: underline solid var(--accent) 2px;
   color: #21e6ff;
+  text-decoration: underline solid var(--accent) 2px;
 }
+
 #profilePostsTitle {
   margin-left: 22px;
   margin-bottom: 6px;
   color: #89bcff;
-  font-size: 1.15rem;
+  font-size: 1.19rem;
   font-weight: 700;
   letter-spacing: 0.03em;
 }
+
+/* Messaging */
+#messageWindow {
+  background: #151c22;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 15px #0006;
+  border: 1.5px solid #1b2028;
+  padding: 16px 18px 18px 18px;
+  max-width: 480px;
+  margin: 10px auto 0 auto;
+}
+#messageHeader {
+  font-size: 1.11rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+#messageThread {
+  background: #131a23;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  padding: 13px;
+  min-height: 130px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-shadow: 0 1px 8px #1da1f212;
+}
+#newMessageInput {
+  background: #222a32;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 1.07rem;
+  transition: box-shadow 0.12s;
+}
+#newMessageInput:focus {
+  outline: 2px solid var(--accent);
+}
+
+#sendMessageBtn {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  border-radius: 11px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 8px 23px;
+  cursor: pointer;
+  transition: background 0.13s, box-shadow 0.11s, transform 0.09s;
+  box-shadow: 0 1px 8px #1da1f219;
+  outline: none;
+}
+#sendMessageBtn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.04);
+  box-shadow: 0 3px 11px #1da1f244;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  background: #1b2026;
+}
+::-webkit-scrollbar-thumb {
+  background: #222c38;
+  border-radius: 10px;
+}
+
+/* Mobile tweaks */
 @media (max-width: 1000px) {
-  .sidebar-left { width: 90px; padding: 14px 0 0 0;}
+  .sidebar-left { width: 90px; padding: 16px 0 0 0;}
   .nav-btn { font-size: 1rem; padding: 11px 8px; margin-left:0;}
-  .logo { font-size: 1.25rem; margin-left: 9px;}
+  .logo { font-size: 1.3rem; margin-left: 10px;}
 }
 @media (max-width: 700px) {
   .sidebar-left { display:none; }
   .main-feed { padding-left:10px; padding-right:10px;}
   .profile-card { max-width:98vw;}
+  #messageWindow { max-width: 99vw;}
 }
