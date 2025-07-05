@@ -3,195 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Twister</title>
+  <title>Twister (Firebase)</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
   <script>
-    const supabaseUrl = 'https://iajztbvoyugbbcrouppm.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhanp0YnZveXVnYmJjcm91cHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTA4NjIsImV4cCI6MjA2Njg2Njg2Mn0.0DdBIpNFIUsAH1-M9NcfmKHnwv2XOc0TEk0flrq7H0I';
-    window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const firebaseConfig = {
+      apiKey: "AIzaSyChTLDOW2M0AwfQcXYs1h50nnsGdSPw9B4",
+      authDomain: "twister-production.firebaseapp.com",
+      projectId: "twister-production",
+      storageBucket: "twister-production.appspot.com",
+      messagingSenderId: "132332523540",
+      appId: "1:132332523540:web:8b5014e182958d51e81701",
+      measurementId: "G-C7KNV5J858"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.firestore();
   </script>
   <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-    }
-    .layout {
-      display: flex;
-      min-height: 100vh;
-    }
-    .sidebar-left {
-      width: 210px;
-      background: #181818;
-      padding: 20px 10px 0 0;
-      min-height: 100vh;
-      border-right: 1px solid #222;
-    }
-    .logo {
-      font-size: 2rem;
-      margin: 0 0 15px 12px;
-      color: #1da1f2;
-      letter-spacing: 0.5px;
-      font-weight: bold;
-    }
-    .nav-links {
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-    }
-    .nav-btn {
-      background: none;
-      border: none;
-      color: #c6d2dc;
-      font-size: 1.13rem;
-      text-align: left;
-      padding: 10px 22px;
-      border-radius: 100px;
-      transition: 0.15s;
-      cursor: pointer;
-      font-weight: 600;
-      outline: none;
-    }
-    .nav-btn.active,
-    .nav-btn:hover {
-      background: #1da1f2;
-      color: #fff;
-    }
-    .main-feed {
-      flex: 1;
-      padding: 34px 0 0 0;
-      max-width: 600px;
-      margin: 0 auto;
-      min-width: 310px;
-    }
-    .section {
-      display: none;
-    }
+    body { background: #111; color: #fff; font-family: system-ui, sans-serif; margin: 0; min-height: 100vh;}
+    .layout { display: flex; min-height: 100vh;}
+    .sidebar-left { width: 210px; background: #181818; padding: 20px 10px 0 0; min-height: 100vh; border-right: 1px solid #222;}
+    .logo { font-size: 2rem; margin: 0 0 15px 12px; color: #1da1f2; font-weight: bold;}
+    .nav-links { display: flex; flex-direction: column; gap: 11px;}
+    .nav-btn { background: none; border: none; color: #c6d2dc; font-size: 1.13rem; text-align: left; padding: 10px 22px; border-radius: 100px; transition: 0.15s; cursor: pointer; font-weight: 600; outline: none;}
+    .nav-btn.active, .nav-btn:hover { background: #1da1f2; color: #fff;}
+    .main-feed { flex: 1; padding: 34px 0 0 0; max-width: 600px; margin: 0 auto; min-width: 310px;}
+    .section { display: none; }
     .section.active { display: block; }
-    .post-input {
-      background: #17191c;
-      border-radius: 20px;
-      margin-bottom: 22px;
-      padding: 20px;
-      box-shadow: 0 2px 16px #0001;
-    }
-    #tweetText {
-      width: 98%;
-      background: #24272b;
-      color: #fff;
-      font-size: 1.15rem;
-      border: none;
-      padding: 13px;
-      border-radius: 13px;
-      resize: vertical;
-      margin-bottom: 11px;
-      outline: none;
-    }
-    .tweet-btn {
-      background: #1da1f2;
-      color: #fff;
-      border: none;
-      border-radius: 15px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      padding: 10px 30px;
-      margin-top: 7px;
-      cursor: pointer;
-      transition: 0.12s;
-      box-shadow: 0 0 10px #1da1f233;
-      outline: none;
-    }
+    .post-input { background: #17191c; border-radius: 20px; margin-bottom: 22px; padding: 20px; box-shadow: 0 2px 16px #0001;}
+    #tweetText { width: 98%; background: #24272b; color: #fff; font-size: 1.15rem; border: none; padding: 13px; border-radius: 13px; resize: vertical; margin-bottom: 11px; outline: none;}
+    .tweet-btn { background: #1da1f2; color: #fff; border: none; border-radius: 15px; font-weight: 700; font-size: 1.1rem; padding: 10px 30px; margin-top: 7px; cursor: pointer; transition: 0.12s; box-shadow: 0 0 10px #1da1f233; outline: none;}
     .tweet-btn:hover { background: #1485b9; }
-    .feed { margin-top: 22px; }
-    .tweet {
-      background: #191b21;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      padding: 14px 19px;
-      box-shadow: 0 1px 10px #0003;
-    }
-    .tweet-footer {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 8px;
-    }
-    .like-btn, .comment-btn {
-      background: none;
-      border: none;
-      color: #f34;
-      font-size: 1.02rem;
-      cursor: pointer;
-      margin-right: 7px;
-      font-weight: 700;
-      outline: none;
-    }
+    .feed { margin-top: 22px;}
+    .tweet { background: #191b21; border-radius: 16px; margin-bottom: 20px; padding: 14px 19px; box-shadow: 0 1px 10px #0003;}
+    .tweet-footer { display: flex; align-items: center; gap: 16px; margin-top: 8px;}
+    .like-btn, .comment-btn { background: none; border: none; color: #f34; font-size: 1.02rem; cursor: pointer; margin-right: 7px; font-weight: 700; outline: none;}
     .like-btn.liked { color: #fc1f67; }
-    .comment-section {
-      margin-top: 12px;
-      background: #131415;
-      border-radius: 10px;
-      padding: 7px 10px 12px 10px;
-    }
-    .comment {
-      color: #a2d6ff;
-      padding: 2px 0;
-      font-size: 1.03rem;
-    }
-    .add-comment {
-      display: flex;
-      gap: 7px;
-      margin-top: 7px;
-    }
-    .add-comment input {
-      flex: 1;
-      border-radius: 9px;
-      border: none;
-      padding: 6px 10px;
-      background: #212324;
-      color: #fff;
-    }
-    .add-comment button {
-      background: #1da1f2;
-      color: #fff;
-      border: none;
-      border-radius: 9px;
-      font-weight: 600;
-      padding: 5px 13px;
-      cursor: pointer;
-    }
-    .empty {
-      color: #555;
-      text-align: center;
-      margin: 35px 0 18px 0;
-      font-size: 1.1rem;
-    }
-    .profile-card {
-      background: #17191c;
-      border-radius: 20px;
-      margin-bottom: 22px;
-      padding: 18px 18px 14px 18px;
-      text-align: center;
-      box-shadow: 0 2px 14px #0002;
-    }
-    .profile-pic {
-      width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px;
-      border: 2px solid #1da1f2;
-      background: #fff2;
-    }
-    .profile-card input[type="text"], .profile-card input[type="file"] {
-      width: 90%; padding: 7px 12px; border-radius: 7px; margin: 5px 0; border: none;
-      background: #212324; color: #fff;
-    }
-    .profile-card button { margin-top: 6px; width: 70%; }
+    .comment-section { margin-top: 12px; background: #131415; border-radius: 10px; padding: 7px 10px 12px 10px;}
+    .comment { color: #a2d6ff; padding: 2px 0; font-size: 1.03rem;}
+    .add-comment { display: flex; gap: 7px; margin-top: 7px;}
+    .add-comment input { flex: 1; border-radius: 9px; border: none; padding: 6px 10px; background: #212324; color: #fff;}
+    .add-comment button { background: #1da1f2; color: #fff; border: none; border-radius: 9px; font-weight: 600; padding: 5px 13px; cursor: pointer;}
+    .empty { color: #555; text-align: center; margin: 35px 0 18px 0; font-size: 1.1rem;}
+    .profile-card { background: #17191c; border-radius: 20px; margin-bottom: 22px; padding: 18px 18px 14px 18px; text-align: center; box-shadow: 0 2px 14px #0002;}
+    .profile-pic { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid #1da1f2; background: #fff2;}
     .profile-link { color: #1da1f2; cursor: pointer; }
-    @media (max-width:700px) {
-      .sidebar-left { display:none; }
-      .main-feed { padding-left:8px; padding-right:8px;}
-    }
+    @media (max-width:700px) { .sidebar-left { display:none; } .main-feed { padding-left:8px; padding-right:8px;} }
   </style>
 </head>
 <body>
@@ -214,7 +73,6 @@
         </div>
         <div id="feed" class="feed"></div>
       </section>
-
       <section id="section-explore" class="section">
         <h2 style="margin-top:0;">🔥 Explore</h2>
         <div id="exploreFeed" class="feed"></div>
