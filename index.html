@@ -5,8 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyChTLDOW2M0AwfQcXYs1h50nnsGdSPw9B4",
+      authDomain: "twister-production.firebaseapp.com",
+      projectId: "twister-production",
+      storageBucket: "twister-production.appspot.com",
+      messagingSenderId: "132332523540",
+      appId: "1:132332523540:web:8b5014e182958d51e81701",
+      measurementId: "G-C7KNV5J858"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.firestore = { collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where };
+    getAnalytics(app);
+  </script>
+  <script defer src="script.js"></script>
 </head>
 <body>
   <div class="layout">
@@ -15,14 +34,11 @@
       <nav class="nav-links">
         <button class="nav-btn active" data-section="home">🏠 Home</button>
         <button class="nav-btn" data-section="explore">🔍 Explore</button>
-        <button class="nav-btn" data-section="notifications">🔔 Notifications</button>
         <button class="nav-btn" data-section="messages">✉️ Messages</button>
         <button class="nav-btn" data-section="profile">👤 Profile</button>
-        <button class="nav-btn" data-section="more">⚙️ More</button>
       </nav>
     </aside>
     <main class="main-feed">
-      <!-- Home (Feed) -->
       <section id="section-home" class="section active">
         <div class="post-input">
           <textarea id="tweetText" placeholder="What's happening?" rows="3"></textarea>
@@ -30,36 +46,29 @@
         </div>
         <div id="feed" class="feed"></div>
       </section>
-      <!-- Explore -->
       <section id="section-explore" class="section">
         <h2 style="margin-top:0;">🔥 Explore</h2>
         <div id="exploreFeed" class="feed"></div>
       </section>
-      <!-- Notifications -->
-      <section id="section-notifications" class="section"><div class="empty">No notifications yet.</div></section>
-      <!-- Messages -->
       <section id="section-messages" class="section">
-        <div id="convoList"></div>
-        <div id="chatWindow" style="display:none;">
-          <div id="chatHeader"></div>
-          <div id="messageList" style="height:48vh;overflow-y:auto;"></div>
-          <div id="msgInputBar" style="display:flex;gap:7px;margin-top:8px;">
-            <input type="text" id="msgInput" placeholder="Type a message..." style="flex:1;"/>
-            <button id="sendMsgBtn">Send</button>
+        <div id="messagesList"></div>
+        <div id="messageWindow" style="display:none;">
+          <div id="messageHeader"></div>
+          <div id="messageThread" style="height:40vh;overflow-y:auto;"></div>
+          <div style="display:flex;gap:7px;margin-top:8px;">
+            <input type="text" id="newMessageInput" placeholder="Type a message..." style="flex:1;"/>
+            <button id="sendMessageBtn">Send</button>
           </div>
-          <button onclick="backToConvoList()" style="margin-top:8px;">⬅️ Back</button>
+          <button onclick="closeMessageWindow()" style="margin-top:8px;">⬅️ Back</button>
         </div>
-        <button id="createGroupBtn" class="tweet-btn" style="margin-top:12px;">Create Group Chat</button>
+        <button id="newMessageBtn" class="tweet-btn" style="margin-top:12px;">New Message</button>
       </section>
-      <!-- Profile -->
       <section id="section-profile" class="section">
         <div id="profileDetail"></div>
         <h3 id="profilePostsTitle">Your Posts</h3>
         <div id="profilePosts" class="feed"></div>
       </section>
-      <section id="section-more" class="section"><div class="empty">More tools coming soon.</div></section>
     </main>
   </div>
-  <script src="script.js"></script>
 </body>
 </html>
