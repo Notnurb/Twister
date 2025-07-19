@@ -1,147 +1,148 @@
-import { collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-const appEl = document.getElementById('app');
-
+const app = document.getElementById('app');
 const pages = {
-  feed: async () => {
-    const postsRef = collection(window.firebaseDB, "posts");
-    const q = query(postsRef, orderBy("timestamp", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    appEl.innerHTML = `
-      <div>
-        <h2>Feed</h2>
-        <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-        <button onclick="createPost()">Post</button>
-        <div id="feedList"></div>
-      </div>
-    `;
-
-    const feedList = document.getElementById('feedList');
-    querySnapshot.forEach((doc) => {
-      const post = doc.data();
-      const postEl = document.createElement("div");
-      postEl.className = "post";
-      postEl.innerHTML = `
-        <p>${post.content}</p>
-        <small>${new Date(post.timestamp).toLocaleString()}</small><br>
-        <button>Like</button> <button>Dislike</button> <button>Comment</button> <button onclick="copyLink('${doc.id}')">Share</button>
-      `;
-      feedList.appendChild(postEl);
-    });
-  },
-
-  discover: async () => {
-    const postsRef = collection(window.firebaseDB, "posts");
-    const q = query(postsRef, orderBy("timestamp", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    appEl.innerHTML = `<h2>Discover</h2><div class="grid"></div>`;
-    const grid = appEl.querySelector('.grid');
-
-    querySnapshot.forEach((doc) => {
-      const post = doc.data();
-      const div = document.createElement("div");
-      div.className = "post";
-      div.innerHTML = `<p>${post.content}</p>`;
-      grid.appendChild(div);
-    });
-  },
-
-  messages: () => {
-    appEl.innerHTML = `
-      <h2>Messages</h2>
-      <input type="text" placeholder="Enter username to message">
-      <textarea placeholder="Type your message here..."></textarea>
-      <button>Send</button>
-    `;
-  },
-
-  pro: () => {
-    appEl.innerHTML = `
-      <h2>Pro</h2>
-      <button class="pro-button">Basic</button>
-      <button class="pro-button">Basic+</button>
-      <button class="pro-button">Pro</button>
-    `;
-  },
-
-  trending: async () => {
-    const postsRef = collection(window.firebaseDB, "posts");
-    const q = query(postsRef); // Modify this to order by "likes" once available
-    const querySnapshot = await getDocs(q);
-
-    appEl.innerHTML = `<h2>Trending</h2>`;
-    querySnapshot.forEach((doc) => {
-      const post = doc.data();
-      const div = document.createElement("div");
-      div.className = "post";
-      div.innerHTML = `<p>${post.content}</p><small>Likes: ${post.likes || 0}</small>`;
-      appEl.appendChild(div);
-    });
-  },
-
-  settings: () => {
-    appEl.innerHTML = `
-      <h2>Settings</h2>
-      <label>Change Name:</label><br><input type="text"><br>
-      <label>Change Profile Picture URL:</label><br><input type="text"><br>
-      <label><input type="checkbox" id="toggleMode"> Toggle Light Mode</label>
-    `;
-
-    document.getElementById("toggleMode").addEventListener("change", (e) => {
-      document.body.style.background = e.target.checked ? "#fff" : "#000";
-      document.body.style.color = e.target.checked ? "#000" : "#fff";
-    });
-  },
-
-  post: () => {
-    appEl.innerHTML = `
-      <h2>Create a Post</h2>
-      <div contenteditable="true" id="richPost" style="border:1px solid #333; padding:10px; min-height:100px;"></div>
-      <div>
-        <button onclick="document.execCommand('bold')">Bold</button>
-        <button onclick="document.execCommand('underline')">Underline</button>
-        <button onclick="document.execCommand('foreColor', false, 'red')">Red</button>
-        <button onclick="document.execCommand('fontSize', false, '5')">Big</button>
-        <button onclick="saveRichPost()">Post</button>
-      </div>
-    `;
-  }
+  feed: renderFeed,
+  discover: renderDiscover,
+  messages: renderMessages,
+  pro: renderPro,
+  trending: renderTrending,
+  settings: renderSettings,
+  post: renderPostEditor
 };
 
-window.createPost = async () => {
-  const content = document.getElementById('postContent').value;
-  if (!content.trim()) return alert("Empty post!");
+async function renderFeed() {
+  app.innerHTML = `
+    <h2>Feed</h2>
+    <textarea id="newPost" placeholder="What's happening?"></textarea>
+    <button class="primary" id="btnPost">Post</button>
+    <div id="postList"></div>`;
+  document.getElementById('btnPost').onclick = postPlain;
+  await loadPosts('#postList', false);
+}
 
-  const postsRef = collection(window.firebaseDB, "posts");
-  await addDoc(postsRef, {
-    content,
-    timestamp: Date.now(),
-    likes: 0
+async function renderDiscover() {
+  app.innerHTML = `<h2>Discover</h2><div id="discoverGrid" class="grid"></div>`;
+  await loadPosts('#discoverGrid', true);
+}
+
+function renderMessages() {
+  app.innerHTML = `
+    <h2>Messages</h2>
+    <input id="msgUser" placeholder="Username" />
+    <textarea id="msgContent" placeholder="Write a message..."></textarea>
+    <button id="btnSend">Send</button>
+    <div id="chatBox"></div>`;
+  document.getElementById('btnSend').onclick = sendMessage;
+}
+
+function renderPro() {
+  app.innerHTML = `
+    <h2>Go Pro</h2>
+    <div class="subscription-option">
+      <div><strong>Basic</strong> – $5/month</div>
+      <button>Choose Basic</button>
+    </div>
+    <div class="subscription-option">
+      <div><strong>Basic+</strong> – $10/month</div>
+      <button>Choose Basic+</button>
+    </div>
+    <div class="subscription-option">
+      <div><strong>Pro</strong> – $20/month</div>
+      <button>Choose Pro</button>
+    </div>`;
+}
+
+async function renderTrending() {
+  app.innerHTML = `<h2>Trending</h2><div id="trendingList"></div>`;
+  await loadPosts('#trendingList', false, true);
+}
+
+function renderSettings() {
+  app.innerHTML = `
+    <h2>Settings</h2>
+    <label>Name:</label><input id="userName" /><br/>
+    <label>Profile pic URL:</label><input id="userPic" /><br/>
+    <div class="toggle-switch"><input type="checkbox" id="modeToggle"/><label>Light Mode</label></div>`;
+  document.getElementById('modeToggle').onchange = toggleMode;
+}
+
+function renderPostEditor() {
+  app.innerHTML = `
+    <h2>New Post</h2>
+    <div class="editor-toolbar">
+      <button onclick="document.execCommand('bold')"><b>B</b></button>
+      <button onclick="document.execCommand('underline')"><u>U</u></button>
+      <button onclick="document.execCommand('italic')"><i>I</i></button>
+      <button onclick="document.execCommand('foreColor',false,'#e91e63')">Color</button>
+      <button onclick="document.execCommand('fontSize',false,'5')">A+</button>
+    </div>
+    <div id="editor" contenteditable="true" class="surface" style="min-height:150px;"></div>
+    <button class="primary" id="btnPublish">Publish</button>`;
+  document.getElementById('btnPublish').onclick = postRich;
+}
+
+// Shared UI for posts
+async function loadPosts(containerSel, threeColumn = false, sortByLikes = false) {
+  const posts = await getDocs(query(
+    collection(window.db, 'posts'),
+    orderBy(sortByLikes ? 'likes' : 'timestamp', sortByLikes ? 'desc' : 'desc')
+  ));
+  const container = document.querySelector(containerSel);
+  container.innerHTML = '';
+  posts.forEach(docSnap => {
+    const p = docSnap.data();
+    const d = document.createElement('div');
+    d.className = 'post';
+    d.innerHTML = `
+      <div class="meta">${new Date(p.timestamp).toLocaleString()}</div>
+      <div class="content">${p.content}</div>
+      <div class="actions">
+        <button onclick="react('${docSnap.id}', 'likes')">👍 ${p.likes||0}</button>
+        <button onclick="react('${docSnap.id}', 'dislikes')">👎 ${p.dislikes||0}</button>
+      </div>`;
+    container.appendChild(d);
   });
- // Starter script
-  location.hash = "#feed"; // refresh
-};
+}
 
-window.copyLink = (id) => {
-  const url = `${location.origin}/#post-${id}`;
-  navigator.clipboard.writeText(url);
-  alert("Link copied!");
-};
+async function postPlain() {
+  const txt = document.getElementById('newPost').value.trim();
+  if (!txt) return alert('Please write something.');
+  await addDoc(collection(window.db, 'posts'), { content: txt, timestamp: Date.now(), likes: 0, dislikes: 0 });
+  renderFeed();
+}
 
-window.saveRichPost = () => {
-  const content = document.getElementById("richPost").innerHTML;
-  document.getElementById("postContent").value = content;
-  window.createPost();
-};
+async function postRich() {
+  const html = document.getElementById('editor').innerHTML.trim();
+  if (!html) return alert('Write something first.');
+  await addDoc(collection(window.db, 'posts'), { content: html, timestamp: Date.now(), likes: 0, dislikes: 0 });
+  location.hash = '#feed';
+}
 
-window.onhashchange = () => {
-  const page = location.hash.replace('#', '') || 'feed';
-  if (pages[page]) pages[page]();
-};
+async function react(id, field) {
+  const ref = doc(window.db, 'posts', id);
+  const snap = await getDocs(query(collection(window.db,'posts'), orderBy('timestamp'))); // simplified
+  const delta = (field === 'likes') ? 1 : 1;
+  await updateDoc(ref, { [field]: (snap.data()?.[field] ?? 0) + delta });
+  renderTrending();
+}
 
-window.onload = () => {
-  const page = location.hash.replace('#', '') || 'feed';
-  if (pages[page]) pages[page]();
-};
+function sendMessage() {
+  alert('Messaging system coming soon – add Firestore/DB logic here!');
+}
+
+function toggleMode(e) {
+  document.body.style.background = e.target.checked ? '#fff' : null;
+  document.body.style.color = e.target.checked ? '#000' : null;
+}
+
+window.onhashchange = () => pages[location.hash.slice(1) || 'feed']();
+window.onload = () => pages[location.hash.slice(1) || 'feed']();
