@@ -5,70 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Twister</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <nav>
+      <button data-page="feed">Feed</button>
+      <button data-page="discover">Discover</button>
+      <button data-page="messages">Messages</button>
+      <button data-page="pro">Pro</button>
+      <button data-page="trending">Trending</button>
+      <button data-page="settings">Settings</button>
+      <button data-page="post">Post</button>
+    </nav>
+    <main id="main-content"></main>
+  </div>
+
+  <script type="module" src="script.js"></script>
+  <!-- Firebase setup -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyChTLDOW2M0AwfQcXYs1h50nnsGdSPw9B4",
-      authDomain: "twister-production.firebaseapp.com",
-      projectId: "twister-production",
-      storageBucket: "twister-production.appspot.com",
-      messagingSenderId: "132332523540",
-      appId: "1:132332523540:web:8b5014e182958d51e81701",
-      measurementId: "G-C7KNV5J858"
+      apiKey: "AIzaSyAW588QwNI4k17_3BO3XwWNVOmsYLWToEs",
+      authDomain: "twisterfirebase.firebaseapp.com",
+      projectId: "twisterfirebase",
+      storageBucket: "twisterfirebase.firebasestorage.app",
+      messagingSenderId: "649360740777",
+      appId: "1:649360740777:web:dfee2c6f2d421736a1f4b8",
+      measurementId: "G-Q2MYDCPG6M"
     };
 
     const app = initializeApp(firebaseConfig);
     window.db = getFirestore(app);
-    window.firestore = { collection, doc, getDoc, getDocs, setDoc, addDoc, query, orderBy, where };
-    getAnalytics(app);
   </script>
-  <script defer src="script.js"></script>
-</head>
-<body>
-  <div class="layout">
-    <aside class="sidebar-left">
-      <h1 class="logo">Twister</h1>
-      <nav class="nav-links">
-        <button class="nav-btn active" data-section="home">🏠 Home</button>
-        <button class="nav-btn" data-section="explore">🔍 Explore</button>
-        <button class="nav-btn" data-section="messages">✉️ Messages</button>
-        <button class="nav-btn" data-section="profile">👤 Profile</button>
-      </nav>
-    </aside>
-    <main class="main-feed">
-      <section id="section-home" class="section active">
-        <div class="post-input">
-          <textarea id="tweetText" placeholder="What's happening?" rows="3"></textarea>
-          <button id="tweetButton" class="tweet-btn">Post</button>
-        </div>
-        <div id="feed" class="feed"></div>
-      </section>
-      <section id="section-explore" class="section">
-        <h2 style="margin-top:0;">🔥 Explore</h2>
-        <div id="exploreFeed" class="feed"></div>
-      </section>
-      <section id="section-messages" class="section">
-        <div id="messagesList"></div>
-        <div id="messageWindow" style="display:none;">
-          <div id="messageHeader"></div>
-          <div id="messageThread" style="height:40vh;overflow-y:auto;"></div>
-          <div style="display:flex;gap:7px;margin-top:8px;">
-            <input type="text" id="newMessageInput" placeholder="Type a message..." style="flex:1;"/>
-            <button id="sendMessageBtn">Send</button>
-          </div>
-          <button onclick="closeMessageWindow()" style="margin-top:8px;">⬅️ Back</button>
-        </div>
-        <button id="newMessageBtn" class="tweet-btn" style="margin-top:12px;">New Message</button>
-      </section>
-      <section id="section-profile" class="section">
-        <div id="profileDetail"></div>
-        <h3 id="profilePostsTitle">Your Posts</h3>
-        <div id="profilePosts" class="feed"></div>
-      </section>
-    </main>
-  </div>
 </body>
 </html>
