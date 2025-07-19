@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Twister</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <div id="app">
+  <header>
+    <h1>Twister</h1>
     <nav>
-      <button data-page="feed">Feed</button>
-      <button data-page="discover">Discover</button>
-      <button data-page="messages">Messages</button>
-      <button data-page="pro">Pro</button>
-      <button data-page="trending">Trending</button>
-      <button data-page="settings">Settings</button>
-      <button data-page="post">Post</button>
+      <a href="#feed">Feed</a>
+      <a href="#discover">Discover</a>
+      <a href="#messages">Messages</a>
+      <a href="#pro">Pro</a>
+      <a href="#trending">Trending</a>
+      <a href="#settings">Settings</a>
+      <a href="#post">Post</a>
     </nav>
-    <main id="main-content"></main>
-  </div>
+  </header>
 
-  <script type="module" src="script.js"></script>
-  <!-- Firebase setup -->
+  <main id="app">
+    <!-- Pages will be injected here -->
+  </main>
+
+  <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAW588QwNI4k17_3BO3XwWNVOmsYLWToEs",
@@ -39,7 +42,10 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    window.db = getFirestore(app);
+    const db = getFirestore(app);
+    window.firebaseDB = db; // make accessible globally
   </script>
+
+  <script src="script.js" type="module"></script>
 </body>
 </html>
