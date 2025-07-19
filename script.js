@@ -1,148 +1,101 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  updateDoc,
-  doc
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getDatabase, ref as dbRef, set, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+import { getFirestore, collection, doc as fsDoc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-const app = document.getElementById('app');
-const pages = {
-  feed: renderFeed,
-  discover: renderDiscover,
-  messages: renderMessages,
-  pro: renderPro,
-  trending: renderTrending,
-  settings: renderSettings,
-  post: renderPostEditor
-};
+// --- Firebase Init ---
+const firebaseConfig = { /* your config */ };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const fs = getFirestore(app);
 
-async function renderFeed() {
-  app.innerHTML = `
-    <h2>Feed</h2>
-    <textarea id="newPost" placeholder="What's happening?"></textarea>
-    <button class="primary" id="btnPost">Post</button>
-    <div id="postList"></div>`;
-  document.getElementById('btnPost').onclick = postPlain;
-  await loadPosts('#postList', false);
+// --- Globals & UI refs ---
+const appEl = document.getElementById('app'), spinner = id('spinner');
+const loginBtn = id('btn-login-sync');
+
+// Helper to get element
+function id(s) { return document.getElementById(s); }
+
+// Swear filter
+const blockSwear = text => {
+  const bad = ["f\\w+", /* regex for all except allowed: ass|dick|balls|shit|damn */];
+  return bad.some(r => new RegExp(r,'i').test(text));
 }
 
-async function renderDiscover() {
-  app.innerHTML = `<h2>Discover</h2><div id="discoverGrid" class="grid"></div>`;
-  await loadPosts('#discoverGrid', true);
-}
+// --- Auth Flow ---
+loginBtn.onclick = showLogin;
 
-function renderMessages() {
-  app.innerHTML = `
-    <h2>Messages</h2>
-    <input id="msgUser" placeholder="Username" />
-    <textarea id="msgContent" placeholder="Write a message..."></textarea>
-    <button id="btnSend">Send</button>
-    <div id="chatBox"></div>`;
-  document.getElementById('btnSend').onclick = sendMessage;
-}
-
-function renderPro() {
-  app.innerHTML = `
-    <h2>Go Pro</h2>
-    <div class="subscription-option">
-      <div><strong>Basic</strong> – $5/month</div>
-      <button>Choose Basic</button>
-    </div>
-    <div class="subscription-option">
-      <div><strong>Basic+</strong> – $10/month</div>
-      <button>Choose Basic+</button>
-    </div>
-    <div class="subscription-option">
-      <div><strong>Pro</strong> – $20/month</div>
-      <button>Choose Pro</button>
+function showLogin(){
+  if(id('loginModal')) return;
+  const div = document.createElement('div');
+  div.id = 'loginModal';
+  div.innerHTML = `
+    <div class="login-box">
+      <input id="ulog" placeholder="Username" />
+      <input id="pwd" type="password" placeholder="Password" />
+      <button id="btnLogin">Login</button>
+      <button id="btnSignup">Sign Up</button>
     </div>`;
+  document.body.append(div);
+  id('btnLogin').onclick = login;
+  id('btnSignup').onclick = signup;
 }
 
-async function renderTrending() {
-  app.innerHTML = `<h2>Trending</h2><div id="trendingList"></div>`;
-  await loadPosts('#trendingList', false, true);
+function signup(){
+  const u = id('ulog').value.trim(), p = id('pwd').value;
+  if(!u||!p) return alert('Fill both');
+  createUserWithEmailAndPassword(auth, u+"@twister", p)
+    .catch(e=>alert(e.message));
 }
 
-function renderSettings() {
-  app.innerHTML = `
-    <h2>Settings</h2>
-    <label>Name:</label><input id="userName" /><br/>
-    <label>Profile pic URL:</label><input id="userPic" /><br/>
-    <div class="toggle-switch"><input type="checkbox" id="modeToggle"/><label>Light Mode</label></div>`;
-  document.getElementById('modeToggle').onchange = toggleMode;
+function login(){
+  const u = id('ulog').value.trim(), p = id('pwd').value;
+  signInWithEmailAndPassword(auth, u+"@twister", p).catch(e=>alert(e.message));
 }
 
-function renderPostEditor() {
-  app.innerHTML = `
-    <h2>New Post</h2>
-    <div class="editor-toolbar">
-      <button onclick="document.execCommand('bold')"><b>B</b></button>
-      <button onclick="document.execCommand('underline')"><u>U</u></button>
-      <button onclick="document.execCommand('italic')"><i>I</i></button>
-      <button onclick="document.execCommand('foreColor',false,'#e91e63')">Color</button>
-      <button onclick="document.execCommand('fontSize',false,'5')">A+</button>
-    </div>
-    <div id="editor" contenteditable="true" class="surface" style="min-height:150px;"></div>
-    <button class="primary" id="btnPublish">Publish</button>`;
-  document.getElementById('btnPublish').onclick = postRich;
-}
+// Session & expiry
+onAuthStateChanged(auth, user=>{
+  if(user){
+    const now = Date.now();
+    if(!user.metadata.lastSignInTime || now - Date.parse(user.metadata.lastSignInTime) > 20*24*3600*1000){
+      auth.signOut();
+      return;
+    }
+    loadApp();
+  } else {
+    showLogin();
+  }
+});
 
-// Shared UI for posts
-async function loadPosts(containerSel, threeColumn = false, sortByLikes = false) {
-  const posts = await getDocs(query(
-    collection(window.db, 'posts'),
-    orderBy(sortByLikes ? 'likes' : 'timestamp', sortByLikes ? 'desc' : 'desc')
-  ));
-  const container = document.querySelector(containerSel);
-  container.innerHTML = '';
-  posts.forEach(docSnap => {
-    const p = docSnap.data();
-    const d = document.createElement('div');
-    d.className = 'post';
-    d.innerHTML = `
-      <div class="meta">${new Date(p.timestamp).toLocaleString()}</div>
-      <div class="content">${p.content}</div>
-      <div class="actions">
-        <button onclick="react('${docSnap.id}', 'likes')">👍 ${p.likes||0}</button>
-        <button onclick="react('${docSnap.id}', 'dislikes')">👎 ${p.dislikes||0}</button>
-      </div>`;
-    container.appendChild(d);
-  });
-}
-
-async function postPlain() {
-  const txt = document.getElementById('newPost').value.trim();
-  if (!txt) return alert('Please write something.');
-  await addDoc(collection(window.db, 'posts'), { content: txt, timestamp: Date.now(), likes: 0, dislikes: 0 });
+// --- Loading UI & Routes ---
+function loadApp(){
+  id('loginModal')?.remove();
+  spinner.classList.add('hidden');
+  // TODO: render default or route
   renderFeed();
 }
 
-async function postRich() {
-  const html = document.getElementById('editor').innerHTML.trim();
-  if (!html) return alert('Write something first.');
-  await addDoc(collection(window.db, 'posts'), { content: html, timestamp: Date.now(), likes: 0, dislikes: 0 });
-  location.hash = '#feed';
+// --- Example Feed Rendering ---
+async function renderFeed(){
+  spinner.classList.remove('hidden');
+  const listRef = dbRef(db, 'posts');
+  appEl.innerHTML = `<button onclick="logout()">Logout</button><div id="feedList"></div>`;
+  id('feedList').innerHTML = '';
+  onChildAdded(listRef, snap => {
+    const p = snap.val();
+    const d = document.createElement('div');
+    d.className = 'post';
+    d.innerHTML = `
+      <div class="meta">${p.author} · ${new Date(p.ts).toLocaleString()}</div>
+      <div class="content">${p.content}</div>
+    `;
+    id('feedList').prepend(d);
+  });
+  spinner.classList.add('hidden');
 }
 
-async function react(id, field) {
-  const ref = doc(window.db, 'posts', id);
-  const snap = await getDocs(query(collection(window.db,'posts'), orderBy('timestamp'))); // simplified
-  const delta = (field === 'likes') ? 1 : 1;
-  await updateDoc(ref, { [field]: (snap.data()?.[field] ?? 0) + delta });
-  renderTrending();
-}
+// Logout helper
+function logout(){ auth.signOut(); }
 
-function sendMessage() {
-  alert('Messaging system coming soon – add Firestore/DB logic here!');
-}
-
-function toggleMode(e) {
-  document.body.style.background = e.target.checked ? '#fff' : null;
-  document.body.style.color = e.target.checked ? '#000' : null;
-}
-
-window.onhashchange = () => pages[location.hash.slice(1) || 'feed']();
-window.onload = () => pages[location.hash.slice(1) || 'feed']();
+// Render placeholders for other pages as stubs...
